@@ -29,10 +29,8 @@ CREATE TABLE comments (
 CREATE TABLE documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   matter_id UUID NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
-  uploaded_by UUID NOT NULL REFERENCES users(id),
   file_name TEXT NOT NULL,
   file_url TEXT NOT NULL,
-  content_type TEXT,
   created_at TIMESTAMP DEFAULT now()
 );
 
@@ -45,3 +43,11 @@ CREATE TABLE webhook_events (
   received_at TIMESTAMP DEFAULT now()
 );
 ```
+
+## Production-grade Architecture ideas
+
+1. Able to replay
+2. Able to deduped & idempotent
+3. Able to audit trace (when a card was changed from webhook or dashboard)
+4. Able to retry SQS
+5.

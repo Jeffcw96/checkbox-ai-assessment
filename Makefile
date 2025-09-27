@@ -1,23 +1,20 @@
-.PHONY: up build logs stop migrate seed
+.PHONY: up build stop prune migrate seed
 
-# Start all services (build images)
 up:
 	docker-compose up -d --build
 
 down:
 	docker-compose down
 
-# Build images only
 build:
 	docker-compose build
 
-# Follow logs for all services
-logs:
-	docker-compose logs -f
-
-# Stop and remove containers
 stop:
 	docker-compose down
+
+prune:
+	docker system prune -a --volumes
+
 
 # Run migration SQL file(s) against postgres container
 # Uses the migration runner which applies all SQL files in ./Backend/supabase/migrations in sorted order

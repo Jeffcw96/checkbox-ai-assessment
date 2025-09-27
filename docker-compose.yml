@@ -1,18 +1,19 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: checkbox_postgres
+  supabase-db:
+    image: supabase/postgres:15.1.1.41
+    container_name: checkbox_supabase_db
     restart: always
     environment:
-      POSTGRES_USER: checkbox
-      POSTGRES_PASSWORD: checkbox
-      POSTGRES_DB: checkbox
+      POSTGRES_PASSWORD: supabase
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
+    # Ephemeral anonymous volume (reset on: docker compose down -v)
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - /var/lib/postgresql/data
     networks:
       - app-network
 
@@ -31,15 +32,17 @@ services:
       dockerfile: Dockerfile
     container_name: checkbox_backend
     restart: always
+    # Required to support Supabase client connections
     env_file:
       - ./Backend/.env
     environment:
-      DATABASE_URL: postgres://checkbox:checkbox@postgres:5432/checkbox
+      DATABASE_URL: postgres://postgres:supabase@supabase-db:5432/postgres
       REDIS_URL: redis://redis:6379
+      NODE_ENV: local
     ports:
       - "4000:4000"
     depends_on:
-      - postgres
+      - supabase-db
       - redis
     networks:
       app-network:
@@ -48,13 +51,15 @@ services:
 
   webhook-service:
     build:
-      context: "./Webhook Service"
+      context: "./Webhook"
       dockerfile: Dockerfile
     container_name: checkbox_webhook
     restart: always
     environment:
       BACKEND_API_URL: "http://backend:4000"
       REDIS_URL: redis://redis:6379
+      NODE_ENV: local
+      X_API_KEY: webhook-api-token
     ports:
       - "4001:4001"
     depends_on:
@@ -64,9 +69,6 @@ services:
       app-network:
         aliases:
           - webhook-service
-
-volumes:
-  pgdata:
 
 networks:
   app-network:

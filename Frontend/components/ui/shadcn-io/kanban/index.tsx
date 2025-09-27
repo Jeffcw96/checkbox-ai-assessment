@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
+import { Card } from "@/components/ui/card";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import type {
   Announcements,
   DndContextProps,
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   closestCenter,
   DndContext,
@@ -17,27 +20,24 @@ import {
   useDroppable,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/core";
+import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   createContext,
   type HTMLAttributes,
   type ReactNode,
   useContext,
+  useEffect,
   useRef,
   useState,
-  useEffect,
-} from 'react';
-import { createPortal } from 'react-dom';
-import tunnel from 'tunnel-rat';
-import { Card } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+} from "react";
+import { createPortal } from "react-dom";
+import tunnel from "tunnel-rat";
 
 const t = tunnel();
 
-export type { DragEndEvent } from '@dnd-kit/core';
+export type { DragEndEvent } from "@dnd-kit/core";
 
 type KanbanItemProps = {
   id: string;
@@ -53,7 +53,7 @@ type KanbanColumnProps = {
 
 type KanbanContextProps<
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
+  C extends KanbanColumnProps = KanbanColumnProps
 > = {
   columns: C[];
   data: T[];
@@ -80,8 +80,8 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
   return (
     <div
       className={cn(
-        'flex size-full min-h-40 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
-        isOver ? 'ring-primary' : 'ring-transparent',
+        "flex size-full min-h-40 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all",
+        isOver ? "ring-primary" : "ring-transparent",
         className
       )}
       ref={setNodeRef}
@@ -124,8 +124,8 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
       <div style={style} {...listeners} {...attributes} ref={setNodeRef}>
         <Card
           className={cn(
-            'cursor-grab gap-4 rounded-md p-3 shadow-sm',
-            isDragging && 'pointer-events-none cursor-grabbing opacity-30',
+            "cursor-grab gap-4 rounded-md p-3 shadow-sm",
+            isDragging && "pointer-events-none cursor-grabbing opacity-30",
             className
           )}
         >
@@ -136,8 +136,8 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
         <t.In>
           <Card
             className={cn(
-              'cursor-grab gap-4 rounded-md p-3 shadow-sm ring-2 ring-primary',
-              isDragging && 'cursor-grabbing',
+              "cursor-grab gap-4 rounded-md p-3 shadow-sm ring-2 ring-primary",
+              isDragging && "cursor-grabbing",
               className
             )}
           >
@@ -150,7 +150,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
 };
 
 export type KanbanCardsProps<T extends KanbanItemProps = KanbanItemProps> =
-  Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id'> & {
+  Omit<HTMLAttributes<HTMLDivElement>, "children" | "id"> & {
     children: (item: T) => ReactNode;
     id: string;
   };
@@ -168,7 +168,7 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
     <ScrollArea className="overflow-hidden">
       <SortableContext items={items}>
         <div
-          className={cn('flex flex-grow flex-col gap-2 p-2', className)}
+          className={cn("flex flex-grow flex-col gap-2 p-2", className)}
           {...props}
         >
           {filteredData.map(children)}
@@ -182,13 +182,13 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
 export type KanbanHeaderProps = HTMLAttributes<HTMLDivElement>;
 
 export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => (
-  <div className={cn('m-0 p-2 font-semibold text-sm', className)} {...props} />
+  <div className={cn("m-0 p-2 font-semibold text-sm", className)} {...props} />
 );
 
 export type KanbanProviderProps<
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
-> = Omit<DndContextProps, 'children'> & {
+  C extends KanbanColumnProps = KanbanColumnProps
+> = Omit<DndContextProps, "children"> & {
   children: (column: C) => ReactNode;
   className?: string;
   columns: C[];
@@ -201,11 +201,21 @@ export type KanbanProviderProps<
   onDragStart?: (event: DragStartEvent) => void;
   onDragEnd?: (event: DragEndEvent) => void;
   onDragOver?: (event: DragOverEvent) => void;
+  /**
+   * Return false to prevent dropping a card into a target column.
+   */
+  canMoveCard?: (args: {
+    item: T;
+    fromColumn: string;
+    toColumn: string;
+    data: T[];
+    columns: C[];
+  }) => boolean;
 };
 
 export const KanbanProvider = <
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
+  C extends KanbanColumnProps = KanbanColumnProps
 >({
   children,
   onDragStart,
@@ -216,6 +226,7 @@ export const KanbanProvider = <
   data,
   onDataChange,
   onSync,
+  canMoveCard,
   ...props
 }: KanbanProviderProps<T, C>) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -246,7 +257,7 @@ export const KanbanProvider = <
       copy.forEach((item) => {
         if (item.column === col.id) {
           if (item.rank === undefined || item.rank === null) {
-            (item as T).rank = (r++) * 1000; // assign gap rank only when missing
+            (item as T).rank = r++ * 1000; // assign gap rank only when missing
           }
           r++;
         }
@@ -258,7 +269,9 @@ export const KanbanProvider = <
   // On mount, ensure any missing ranks are filled once and notify parent
   useEffect(() => {
     const filled = recomputeRanks(dataRef.current);
-    const changed = filled.some((f, idx) => f.rank !== dataRef.current[idx]?.rank);
+    const changed = filled.some(
+      (f, idx) => f.rank !== dataRef.current[idx]?.rank
+    );
     if (changed) {
       onDataChange?.(filled);
     }
@@ -290,14 +303,14 @@ export const KanbanProvider = <
     const activeItem = dataRef.current.find((item) => item.id === active.id);
     const overItem = dataRef.current.find((item) => item.id === over.id);
 
-    if (!(activeItem)) {
+    if (!activeItem) {
       return;
     }
 
     const activeColumn = activeItem.column;
     const overColumn =
       overItem?.column ||
-      columns.find(col => col.id === over.id)?.id ||
+      columns.find((col) => col.id === over.id)?.id ||
       columns[0]?.id;
 
     if (activeColumn !== overColumn) {
@@ -324,12 +337,30 @@ export const KanbanProvider = <
 
     const oldIndex = newData.findIndex((item) => item.id === active.id);
 
-    // determine destination column and target index
+    if (oldIndex === -1) return;
+
     const overItem = newData.find((item) => item.id === over.id);
     const destColumn =
       overItem?.column ||
       columns.find((col) => col.id === over.id)?.id ||
       columns[0]?.id;
+
+    const originalColumn = newData[oldIndex].column;
+
+    // Authorization / rule check
+    if (
+      canMoveCard &&
+      !canMoveCard({
+        item: newData[oldIndex],
+        fromColumn: originalColumn,
+        toColumn: destColumn,
+        data: newData,
+        columns,
+      })
+    ) {
+      // Disallowed: abort move
+      return;
+    }
 
     // ensure the item's column is updated when moving between columns
     newData[oldIndex] = { ...newData[oldIndex], column: destColumn } as T;
@@ -355,14 +386,19 @@ export const KanbanProvider = <
 
     // Assign a fractional rank only for the moved item using neighbors in its destination column
     const destColumnItems = newData.filter((it) => it.column === destColumn);
-    const movedIndexInColumn = destColumnItems.findIndex((it) => it.id === active.id);
+    const movedIndexInColumn = destColumnItems.findIndex(
+      (it) => it.id === active.id
+    );
     const before = destColumnItems[movedIndexInColumn - 1];
     const after = destColumnItems[movedIndexInColumn + 1];
     const newRank = calculateRankBetween(before?.rank, after?.rank);
     // find and set moved item rank in newData
     const movedGlobalIndex = newData.findIndex((it) => it.id === active.id);
     if (movedGlobalIndex !== -1) {
-      newData[movedGlobalIndex] = { ...newData[movedGlobalIndex], rank: newRank } as T;
+      newData[movedGlobalIndex] = {
+        ...newData[movedGlobalIndex],
+        rank: newRank,
+      } as T;
     }
 
     // do not renumber other items; recomputeRanks used only to fill missing ranks earlier
@@ -410,13 +446,13 @@ export const KanbanProvider = <
       >
         <div
           className={cn(
-            'grid size-full auto-cols-fr grid-flow-col gap-4',
+            "grid size-full auto-cols-fr grid-flow-col gap-4",
             className
           )}
         >
           {columns.map((column) => children(column))}
         </div>
-        {typeof window !== 'undefined' &&
+        {typeof window !== "undefined" &&
           createPortal(
             <DragOverlay>
               <t.Out />

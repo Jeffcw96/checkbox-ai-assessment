@@ -1,19 +1,19 @@
-'use client';
-import { faker } from '@faker-js/faker';
+"use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   KanbanBoard,
   KanbanCard,
   KanbanCards,
   KanbanHeader,
   KanbanProvider,
-} from '@/components/ui/shadcn-io/kanban';
-import { useState, useRef } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/shadcn-io/kanban";
+import { faker } from "@faker-js/faker";
+import { useRef, useState } from "react";
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 const columns = [
-  { id: "PLANNED", name: 'Planned', color: '#6B7280' },
-  { id: "IN_PROGRESS", name: 'In Progress', color: '#F59E0B' },
-  { id: "DONE", name: 'Done', color: '#10B981' },
+  { id: "PLANNED", name: "Planned", color: "#6B7280" },
+  { id: "IN_PROGRESS", name: "In Progress", color: "#F59E0B" },
+  { id: "DONE", name: "Done", color: "#10B981" },
 ];
 const users = Array.from({ length: 4 })
   .fill(null)
@@ -27,16 +27,17 @@ const users = Array.from({ length: 4 })
 const exampleFeaturesRaw = Array.from({ length: 5 })
   .fill(null)
   .map((_val, ind) => {
-    const name = capitalize(faker.company.buzzPhrase())
+    const name = capitalize(faker.company.buzzPhrase());
     return {
-    id: name,
-    name,
-    startAt: faker.date.past({ years: 0.5, refDate: new Date() }),
-    endAt: faker.date.future({ years: 0.5, refDate: new Date() }),
-    column: faker.helpers.arrayElement(columns).id,
-    owner: faker.helpers.arrayElement(users),
-    rank: ind * 1000,
-  }});
+      id: name,
+      name,
+      startAt: faker.date.past({ years: 0.5, refDate: new Date() }),
+      endAt: faker.date.future({ years: 0.5, refDate: new Date() }),
+      column: faker.helpers.arrayElement(columns).id,
+      owner: faker.helpers.arrayElement(users),
+      rank: ind * 1000,
+    };
+  });
 
 // compute initial rank per column
 const exampleFeatures = (() => {
@@ -46,21 +47,21 @@ const exampleFeatures = (() => {
     let r = 1;
     copy.forEach((item) => {
       if (item.column === col.id) {
-        (item as unknown as { rank?: number }).rank = (r++) * 1000; // multiply by 1000 to leave gaps
+        (item as unknown as { rank?: number }).rank = r++ * 1000; // multiply by 1000 to leave gaps
       }
     });
   });
   return copy;
 })();
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
 });
-const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
 });
 const Example = () => {
   const [features, setFeatures] = useState(exampleFeatures);
@@ -69,42 +70,46 @@ const Example = () => {
   const latestFeaturesRef = useRef<typeof exampleFeatures>(exampleFeatures);
 
   const handleDataChange = (newData: typeof exampleFeatures) => {
-    console.log('Data changed:', newData);
+    console.log("Data changed:", newData);
     setFeatures([...newData]);
     latestFeaturesRef.current = [...newData];
   };
 
-
-  const handleSync = (payload: { id: string; column: string; rank: number }) => {
+  const handleSync = (payload: {
+    id: string;
+    column: string;
+    rank: number;
+  }) => {
     // replace this with an actual network call to your backend endpoint
     // e.g. fetch('/api/kanban/card', { method: 'PATCH', body: JSON.stringify(payload) })
     // use latestFeaturesRef.current instead of the possibly-stale `features` variable
-    console.log('latest features snapshot', latestFeaturesRef.current);
-    console.log('sync payload', payload);
+    console.log("latest features snapshot", latestFeaturesRef.current);
+    console.log("sync payload", payload);
 
-    const {column, id} = payload
+    const { column, id } = payload;
 
-    const filteredColumn = latestFeaturesRef.current.filter(f => f.column === column)
-    console.log('filteredColumn', filteredColumn)
+    const filteredColumn = latestFeaturesRef.current.filter(
+      (f) => f.column === column
+    );
+    console.log("filteredColumn", filteredColumn);
 
     // Find the elements index that happened before and after of the moved element
     // Returns undefined if there is no such element
-    const index = filteredColumn.findIndex(f => f.id === id)
-    const before = filteredColumn[index - 1]
-    const after = filteredColumn[index + 1]
+    const index = filteredColumn.findIndex((f) => f.id === id);
+    const before = filteredColumn[index - 1];
+    const after = filteredColumn[index + 1];
 
-    console.log('index', index)
-    console.log('before', before)
-    console.log('after', after)
+    console.log("index", index);
+    console.log("before", before);
+    console.log("after", after);
 
     const apiPayload = {
       id,
       rank: calculateRank(before?.rank, after?.rank),
-      column
-    }
+      column,
+    };
 
-    console.log('apiPayload', apiPayload)
-
+    console.log("apiPayload", apiPayload);
   };
 
   const calculateRank = (before?: number, after?: number) => {
@@ -112,7 +117,7 @@ const Example = () => {
     if (before === undefined) return after! / 2;
     if (after === undefined) return before + 1000;
     return (before + after) / 2;
-  }
+  };
 
   return (
     <KanbanProvider
@@ -120,6 +125,19 @@ const Example = () => {
       data={features}
       onDataChange={handleDataChange}
       onSync={handleSync}
+      canMoveCard={({ fromColumn, toColumn }) => {
+        // if (
+        //   toColumn === "DONE" ||
+        //   toColumn === "IN_PROGRESS" ||
+        //   toColumn === "PLANNED"
+        // ) {
+        //   return false;
+        // }
+        // return true;
+
+        // Temporary disable until got extra time on D&D update status
+        return false;
+      }}
     >
       {(column) => (
         <KanbanBoard id={column.id} key={column.id}>
@@ -157,7 +175,7 @@ const Example = () => {
                   )}
                 </div>
                 <p className="m-0 text-muted-foreground text-xs">
-                  {shortDateFormatter.format(feature.startAt)} - {' '}
+                  {shortDateFormatter.format(feature.startAt)} -{" "}
                   {dateFormatter.format(feature.endAt)}
                 </p>
               </KanbanCard>
