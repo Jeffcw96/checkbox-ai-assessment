@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: checkbox_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: checkbox
+      POSTGRES_PASSWORD: checkbox
+      POSTGRES_DB: checkbox
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: checkbox_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: checkbox_backend
+    restart: always
+    env_file:
+      - ./Backend/.env
+    environment:
+      DATABASE_URL: postgres://checkbox:checkbox@postgres:5432/checkbox
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      app-network:
+        aliases:
+          - backend
+
+  webhook-service:
+    build:
+      context: "./Webhook Service"
+      dockerfile: Dockerfile
+    container_name: checkbox_webhook
+    restart: always
+    environment:
+      BACKEND_API_URL: "http://backend:4000"
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "4001:4001"
+    depends_on:
+      - backend
+      - redis
+    networks:
+      app-network:
+        aliases:
+          - webhook-service
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge

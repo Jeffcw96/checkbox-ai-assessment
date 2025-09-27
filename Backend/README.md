@@ -1,0 +1,47 @@
+## To mentioned in architecture:
+
+1. User table should have role eg: Admin (Checkbox ai staff), customer, developer and etc
+
+## Schema:
+
+```
+-- Matters
+CREATE TABLE matters (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  contract_id TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now(),
+  requester_id UUID REFERENCES users(id),
+  assignee_id UUID REFERENCES users(id)
+);
+
+-- Comments
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  matter_id UUID NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+  author_id UUID NOT NULL REFERENCES users(id),
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- Documents
+CREATE TABLE documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  matter_id UUID NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+  uploaded_by UUID NOT NULL REFERENCES users(id),
+  file_name TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  content_type TEXT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- Webhook events (idempotency tracking)
+CREATE TABLE webhook_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id TEXT UNIQUE NOT NULL,
+  event_type TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  received_at TIMESTAMP DEFAULT now()
+);
+```
