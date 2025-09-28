@@ -1,3 +1,7 @@
+## TODO:
+
+1. Cache get matters listing and matter details in Redis
+
 ## Supabase handy commands:
 
 1. `supabase migration new <name>` - create a new migration file
