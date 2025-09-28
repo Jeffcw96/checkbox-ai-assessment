@@ -1,5 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useGetUser } from "@/hooks/service/useGetUser";
 import React from "react";
 
 interface Matter {
@@ -53,6 +54,12 @@ export const MatterDetails: React.FC<MatterDetailsProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { data } = useGetUser({
+    enabled: open && !!matter,
+  });
+
+  console.log("data", data);
+
   if (!open || !matter) return null;
 
   return (
