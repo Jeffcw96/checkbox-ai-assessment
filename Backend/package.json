@@ -4,6 +4,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "gen:type": "supabase gen types typescript --project-id vsjfayoglikiwsrzzlro > schema.type.ts",
+    "migration:push": "supabase migration up --linked",
     "start": "TS_NODE_BASEURL=./dist node dist/index.js",
     "dev": "ts-node-dev src/index.ts"
   },

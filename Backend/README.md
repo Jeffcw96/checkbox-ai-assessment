@@ -1,6 +1,6 @@
-## To mentioned in architecture:
+## Supabase handy commands:
 
-1. User table should have role eg: Admin (Checkbox ai staff), customer, developer and etc
+1. `supabase migration new <name>` - create a new migration file
 
 ## Schema:
 
@@ -10,8 +10,12 @@ CREATE TABLE matters (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   contract_id TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
+  description TEXT,
+  rank NUMERIC(30,10),
   status TEXT NOT NULL,
+  version BIGINT NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
   requester_id UUID REFERENCES users(id),
   assignee_id UUID REFERENCES users(id)
 );
@@ -50,4 +54,3 @@ CREATE TABLE webhook_events (
 2. Able to deduped & idempotent
 3. Able to audit trace (when a card was changed from webhook or dashboard)
 4. Able to retry SQS
-5.

@@ -44,12 +44,12 @@ type KanbanItemProps = {
   name: string;
   column: string;
   rank?: number; // optional fractional rank
-} & Record<string, unknown>;
+};
 
 type KanbanColumnProps = {
   id: string;
   name: string;
-} & Record<string, unknown>;
+};
 
 type KanbanContextProps<
   T extends KanbanItemProps = KanbanItemProps,
