@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { errorHandler } from "./middleware/errorHandler";
+import { contractRouter } from "./routes/contract.route";
 import { userRouter } from "./routes/user.route";
 import { webhookRouter } from "./routes/webhook.route";
 
@@ -16,6 +17,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/user", userRouter);
 app.use("/webhook", webhookRouter);
+app.use("/contracts", contractRouter);
 
 app.use(errorHandler);
 

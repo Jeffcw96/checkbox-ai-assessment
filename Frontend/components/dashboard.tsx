@@ -63,7 +63,7 @@ const users = Array.from({ length: 4 })
   }));
 
 // Generate mocked matters (replace previous feature mocks)
-const mockedMattersRaw: Matter[] = Array.from({ length: 8 }).map((_v, idx) => {
+const mockedContracts: Matter[] = Array.from({ length: 8 }).map((_v, idx) => {
   const status = faker.helpers.arrayElement(columns).id;
   const requester = faker.helpers.arrayElement(users);
   const assignee = faker.helpers.arrayElement(users);
@@ -91,7 +91,7 @@ const mockedMattersRaw: Matter[] = Array.from({ length: 8 }).map((_v, idx) => {
 
 // Initialize name + rank per column with gaps
 const initialMatters: Matter[] = (() => {
-  const copy = mockedMattersRaw.map((m) => ({ ...m, name: m.title }));
+  const copy = mockedContracts.map((m) => ({ ...m, name: m.title }));
   columns.forEach((col) => {
     let r = 1;
     copy

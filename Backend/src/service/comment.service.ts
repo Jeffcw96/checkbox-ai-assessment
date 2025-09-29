@@ -1,6 +1,11 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { contractComments, contracts, webhookEvents } from "../db/schema";
+import {
+  contractComments,
+  contracts,
+  users,
+  webhookEvents,
+} from "../db/schema";
 import { CommentAddedSchema } from "../type/schema/comment.type";
 
 export const handleContractCommentAdded = async (payload: any) => {
@@ -64,4 +69,35 @@ export const handleContractCommentAdded = async (payload: any) => {
   });
 
   return { isValid: true, data: result };
+};
+
+export const getContractComments = async (contractId: string) => {
+  const rows = await db
+    .select({
+      id: contractComments.id,
+      contractId: contractComments.contractId,
+      authorId: contractComments.authorId,
+      message: contractComments.message,
+      createdAt: contractComments.createdAt,
+      updatedAt: contractComments.updatedAt,
+      authorName: users.name,
+      authorPicture: users.picture,
+    })
+    .from(contractComments)
+    .leftJoin(users, eq(users.id, contractComments.authorId))
+    .where(eq(contractComments.contractId, contractId))
+    .orderBy(asc(contractComments.createdAt));
+
+  return rows.map((r) => ({
+    id: r.id,
+    contractId: r.contractId,
+    message: r.message,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    author: {
+      id: r.authorId,
+      name: r.authorName,
+      picture: r.authorPicture,
+    },
+  }));
 };

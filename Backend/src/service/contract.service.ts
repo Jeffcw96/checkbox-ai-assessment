@@ -1,10 +1,12 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "../db/client";
 import {
   contractComments,
   contractDocuments,
   contracts,
   contractStatusHistory,
+  users,
   webhookEvents,
 } from "../db/schema";
 import {
@@ -72,6 +74,7 @@ export const handleNewContractCreation = async (payload: any) => {
           contractId,
           authorId: (c as any).author ?? (c as any).author_id,
           message: c.message,
+          createdAt: c.createdAt,
         }))
       );
     }
@@ -90,6 +93,7 @@ export const handleNewContractCreation = async (payload: any) => {
     await tx.insert(contractStatusHistory).values({
       contractId,
       status: contractDetails.status,
+      changedAt: contractDetails.createdAt,
     });
 
     await tx.insert(webhookEvents).values({
@@ -139,7 +143,7 @@ export const handleContractStatusUpdate = async (payload: any) => {
       .update(contracts)
       .set({
         status,
-        updatedAt, // trust upstream timestamp (already validated as string)
+        updatedAt,
       })
       .where(eq(contracts.id, contractId))
       .returning({ id: contracts.id });
@@ -166,4 +170,71 @@ export const handleContractStatusUpdate = async (payload: any) => {
   });
 
   return { isValid: true, data: result };
+};
+
+export const getContracts = async () => {
+  const requester = alias(users, "requester");
+  const assignee = alias(users, "assignee");
+
+  const contractsList = await db
+    .select({
+      id: contracts.id,
+      title: contracts.title,
+      description: contracts.description,
+      status: contracts.status,
+      rank: contracts.rank,
+      version: contracts.version,
+      requester: {
+        id: requester.id,
+        name: requester.name,
+        image: requester.picture,
+      },
+      assignee: {
+        id: assignee.id,
+        name: assignee.name,
+        image: assignee.picture,
+      },
+      createdAt: contracts.createdAt,
+      updatedAt: contracts.updatedAt,
+    })
+    .from(contracts)
+    .leftJoin(requester, eq(requester.id, contracts.requesterId))
+    .leftJoin(assignee, eq(assignee.id, contracts.assigneeId));
+
+  return contractsList;
+};
+
+export const getContractById = async (contractId: string) => {
+  const requester = alias(users, "requester");
+  const assignee = alias(users, "assignee");
+
+  const contract = await db
+    .select({
+      id: contracts.id,
+      title: contracts.title,
+      description: contracts.description,
+      status: contracts.status,
+      rank: contracts.rank,
+      version: contracts.version,
+      requester: {
+        id: requester.id,
+        name: requester.name,
+        image: requester.picture,
+      },
+      assignee: {
+        id: assignee.id,
+        name: assignee.name,
+        image: assignee.picture,
+      },
+      createdAt: contracts.createdAt,
+      updatedAt: contracts.updatedAt,
+    })
+    .from(contracts)
+    .leftJoin(requester, eq(requester.id, contracts.requesterId))
+    .leftJoin(assignee, eq(assignee.id, contracts.assigneeId))
+    .where(eq(contracts.id, contractId))
+    .limit(1)
+    .then((res) => res[0]);
+
+  return contract;
 };
