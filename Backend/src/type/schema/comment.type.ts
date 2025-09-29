@@ -9,6 +9,7 @@ export const CommentSchema = z.object({
 
 export const CommentAddedSchema = z.object({
   event: z.literal("contract.comment_added"),
+  eventId: z.string(),
   contractId: z.string(),
   comment: CommentSchema,
 });

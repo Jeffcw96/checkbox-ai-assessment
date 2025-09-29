@@ -7,7 +7,10 @@ import {
   contractStatusHistory,
   webhookEvents,
 } from "../db/schema";
-import { ContractCreatedSchema } from "../type/schema/contract.type";
+import {
+  ContractCreatedSchema,
+  ContractStatusUpdatedSchema,
+} from "../type/schema/contract.type";
 import { UserContractRole } from "../type/schema/user.type";
 
 export const handleNewContractCreation = async (payload: any) => {
@@ -92,6 +95,70 @@ export const handleNewContractCreation = async (payload: any) => {
     await tx.insert(webhookEvents).values({
       eventId,
       eventType: parsed.data.event,
+      payload,
+    });
+
+    return { skipped: false, contractId };
+  });
+
+  return { isValid: true, data: result };
+};
+
+export const handleContractStatusUpdate = async (payload: any) => {
+  console.log("Updating contract status with data:", payload);
+
+  const parsed = ContractStatusUpdatedSchema.safeParse(payload);
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map((i) => ({
+      path: i.path.join("."),
+      message: i.message,
+      code: i.code,
+    }));
+    return {
+      isValid: false,
+      error: JSON.stringify({ event: payload?.event, issues }),
+    };
+  }
+
+  const { event, eventId, contractId, status, updatedAt } = parsed.data;
+
+  // Idempotency check
+  const existing = await db
+    .select({ id: webhookEvents.id })
+    .from(webhookEvents)
+    .where(eq(webhookEvents.eventId, eventId ?? ""))
+    .limit(1);
+
+  if (existing.length) {
+    return { skipped: true, reason: "event_already_processed" };
+  }
+
+  const result = await db.transaction(async (tx) => {
+    // Update contract (ensure it exists)
+    const updated = await tx
+      .update(contracts)
+      .set({
+        status,
+        updatedAt, // trust upstream timestamp (already validated as string)
+      })
+      .where(eq(contracts.id, contractId))
+      .returning({ id: contracts.id });
+
+    if (!updated.length) {
+      return { skipped: true, reason: "contract_not_found" };
+    }
+
+    // Insert status history
+    await tx.insert(contractStatusHistory).values({
+      contractId,
+      status,
+      changedAt: updatedAt,
+    });
+
+    // Record webhook event
+    await tx.insert(webhookEvents).values({
+      eventId,
+      eventType: event,
       payload,
     });
 

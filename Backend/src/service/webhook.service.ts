@@ -1,4 +1,8 @@
-import { handleNewContractCreation } from "./contract.service";
+import { handleContractCommentAdded } from "./comment.service";
+import {
+  handleContractStatusUpdate,
+  handleNewContractCreation,
+} from "./contract.service";
 
 export const getEventRouter = (): Record<
   string,
@@ -6,7 +10,6 @@ export const getEventRouter = (): Record<
 > => {
   return {
     "contract.created": async (payload: any) => {
-      console.log("Handling contract.created event", payload.eventId);
       return await handleNewContractCreation(payload);
     },
     "contract.updated": async (payload: any) => {
@@ -16,10 +19,10 @@ export const getEventRouter = (): Record<
       console.log("Handling contract.deleted event");
     },
     "contract.status_updated": async (payload: any) => {
-      console.log("Handling contract.status_updated event");
+      return await handleContractStatusUpdate(payload);
     },
     "contract.comment_added": async (payload: any) => {
-      console.log("Handling contract.comment_added event");
+      return await handleContractCommentAdded(payload);
     },
   };
 };

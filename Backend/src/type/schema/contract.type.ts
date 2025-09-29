@@ -6,7 +6,7 @@ import { UserSchema } from "./user.type";
 export const ContractStatus = z.enum(["Draft", "In Review", "Done"]);
 
 export const ContractCreatedSchema = z.object({
-  eventId: z.string().optional(),
+  eventId: z.string(),
   event: z.literal("contract.created"),
   contract: z.object({
     id: z.string(),
@@ -22,6 +22,7 @@ export const ContractCreatedSchema = z.object({
 
 export const ContractStatusUpdatedSchema = z.object({
   event: z.literal("contract.status_updated"),
+  eventId: z.string(),
   contractId: z.string(),
   status: ContractStatus,
   updatedAt: z.string(),
