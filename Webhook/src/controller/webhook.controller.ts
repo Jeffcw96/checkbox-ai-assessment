@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Request, Response } from "express";
 import {
+  publishEventToQueue,
   validateEvent,
   validateSchemaPayload,
 } from "../service/webhook.service";
@@ -35,10 +36,17 @@ export const handleWebhookEvent = async (req: Request, res: Response) => {
 
   const { data } = validatedPayload;
 
-  // Successfully validated
+  const publishResult = await publishEventToQueue(data);
+
+  if (!publishResult.isValid) {
+    throw AppError.internalError(publishResult.error);
+  }
+
+  // Successfully validated and published
   return res.status(200).json({
     status: "ok",
     event: data.event,
     payload: data,
+    published: true,
   });
 };

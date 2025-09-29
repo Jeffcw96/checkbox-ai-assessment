@@ -1,4 +1,6 @@
+import { PublishCommand } from "@aws-sdk/client-sns";
 import { EventType } from "../type/event.type";
+import { snsClient } from "../utils/aws";
 import { eventSchemaMapper } from "../utils/eventSchemaMapper";
 import { isValidEvent } from "../utils/isValidEvent";
 
@@ -44,4 +46,29 @@ export const validateSchemaPayload = (
 
   const validatedData = parsed.data as { event: string; [key: string]: any };
   return { isValid: true, data: validatedData };
+};
+
+export const publishEventToQueue = async (payload: {
+  event: string;
+  [key: string]: any;
+}): Promise<{ isValid: false; error: string } | { isValid: true }> => {
+  // New: Publish to SNS
+  const topicArn = process.env.EVENT_ADAPTER_SNS_TOPIC_ARN;
+  if (!topicArn) {
+    return { isValid: false, error: "SNS topic ARN not configured" };
+  }
+
+  try {
+    await snsClient.send(
+      new PublishCommand({
+        TopicArn: topicArn,
+        Message: JSON.stringify(payload),
+      })
+    );
+
+    return { isValid: true };
+  } catch (e) {
+    console.error("Error publishing to SNS:", e);
+    return { isValid: false, error: "Failed to publish message to SNS" };
+  }
 };
