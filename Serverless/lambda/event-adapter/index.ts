@@ -71,7 +71,7 @@ export const handler = async (event: any) => {
       TableName: TABLE_NAME,
       Item: item,
     };
-    if (status === "PENDING") {
+    if (!apiSucceeded) {
       putParams.ConditionExpression =
         "attribute_not_exists(eventID) OR #s = :pendingStatus";
       putParams.ExpressionAttributeNames = { "#s": "status" };
