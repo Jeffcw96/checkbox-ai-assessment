@@ -22,7 +22,7 @@ export const matters = pgTable(
   "matters",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    contractId: text("contract_id").notNull().unique(),
+    contractId: text("contract_id").notNull(),
     requesterId: uuid("requester_id").references(() => users.id),
     assigneeId: uuid("assignee_id").references(() => users.id),
     title: text("title").notNull(),

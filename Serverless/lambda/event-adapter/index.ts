@@ -6,7 +6,7 @@ const TABLE_NAME = process.env.TABLE_NAME!;
 const METRIC_NAMESPACE = process.env.METRIC_NAMESPACE || "event_adapter_dev";
 const CHECKBOX_API_URL =
   process.env.CHECKBOX_API_URL || "https://checkbox-ai-backend.vercel.app";
-const MAX_RETRIES = 5;
+const MAX_RETRIES = parseInt(process.env.MAX_RETRIES || "5", 10);
 
 function datadogMeticStub(name: string, value: number, tags: string[] = []) {
   console.debug("[metric]", { namespace: METRIC_NAMESPACE, name, value, tags });
@@ -81,6 +81,10 @@ export const handler = async (event: any) => {
     }
 
     console.log("putParams", putParams);
+
+    let processedPreviously = false;
+    let writeFailed = false;
+
     try {
       await dynamoDBClient.send(new PutItemCommand(putParams));
       datadogMeticStub(
@@ -92,27 +96,53 @@ export const handler = async (event: any) => {
       );
     } catch (err: any) {
       if (!apiSucceeded && err.name === "ConditionalCheckFailedException") {
-        // Existing record already PROCESSED; skip downgrade
+        // Existing record already PROCESSED -> do not retry (idempotent)
+        processedPreviously = true;
         datadogMeticStub("event_adapter.idempotent.skip", 1, [
           `event_type:${eventType}`,
         ]);
       } else {
+        writeFailed = true;
         datadogMeticStub("event_adapter.write.failure", 1, [
           `event_type:${eventType}`,
           `error:${err.name}`,
         ]);
-        failures.push({ itemIdentifier: messageId });
-        continue;
       }
     }
 
-    // DLQ reporting for observability
-    if (!apiSucceeded && receiveCount >= MAX_RETRIES) {
-      datadogMeticStub("event_adapter.dead_letter", 1, [
-        `event_type:${eventType}`,
-        `retries:${retryCountValue}`,
-      ]);
+    // Retry decision logic
+    if (writeFailed || (!apiSucceeded && !processedPreviously)) {
+      // If this is the final allowed receive, mark FAILED before letting SQS redrive to DLQ
+      if (
+        !apiSucceeded &&
+        !processedPreviously &&
+        receiveCount === MAX_RETRIES
+      ) {
+        datadogMeticStub("event_adapter.dead_letter", 1, [
+          `event_type:${eventType}`,
+          `retries:${retryCountValue}`,
+        ]);
+        try {
+          await dynamoDBClient.send(
+            new PutItemCommand({
+              TableName: TABLE_NAME,
+              Item: {
+                ...item,
+                status: { S: "FAILED" },
+                replayedAt: { S: now },
+              },
+            })
+          );
+        } catch (err: any) {
+          datadogMeticStub("event_adapter.dead_letter.write_failure", 1, [
+            `event_type:${eventType}`,
+            `error:${err.name}`,
+          ]);
+        }
+      }
+      // Always push for retry unless idempotent skip; final failure still needs to be returned
       failures.push({ itemIdentifier: messageId });
+      continue;
     }
   }
 

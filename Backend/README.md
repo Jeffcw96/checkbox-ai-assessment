@@ -18,14 +18,51 @@ Setup steps:
 4. Config: drizzle.config.ts
 5. Generate migration (from schema changes):
    npx drizzle-kit generate
-6. Apply migrations (local):
-   npx drizzle-kit push
-   (or run SQL files under ./drizzle/migrations manually)
+6. Apply migrations (preferred):
+   npx drizzle-kit migrate
+   (Push is only for schema-first diffing; avoid while using raw SQL migration files.)
 7. Introspect (if starting from existing DB instead of hand schema):
    npx drizzle-kit introspect
 8. Use client:
    import { db } from "./src/db/client";
    await db.select().from(matters);
+
+> Note: Keep current drizzle-orm/drizzle-kit versions unless `npm view drizzle-kit versions` shows a newer patch that fixes the push CHECK parsing crash. Do not use versions that aren’t published (avoid ^0.44.7 / ^0.32.2 errors).
+
+### Applying migrations
+
+Use:
+
+```
+npx drizzle-kit migrate
+```
+
+`push` may still crash on introspection; prefer `migrate` with SQL files.
+
+### Workaround for drizzle-kit push crash
+
+- Issue: Version 0.31.5 crashes while introspecting CHECK constraints (TypeError on checkValue).
+- Fix: Upgrade drizzle-kit (see package.json) AND/OR set strict:false in drizzle.config.ts.
+- Use migrate instead of push unless you intentionally need schema diffing.
+
+### Baseline procedure (if DB was created outside drizzle meta)
+
+1. Create a temporary empty DB, point SUPABASE_DB_URL to it.
+2. Run: npx drizzle-kit migrate
+3. SELECT \* FROM drizzle.\_\_drizzle_migrations; capture rows (ids/hashes).
+4. Recreate drizzle.**drizzle_migrations table in prod if missing:
+   CREATE SCHEMA IF NOT EXISTS drizzle;
+   CREATE TABLE IF NOT EXISTS drizzle.**drizzle_migrations (
+   id serial PRIMARY KEY,
+   hash text NOT NULL,
+   created_at bigint NOT NULL
+   );
+5. Insert the captured rows into prod. Future `npx drizzle-kit migrate` will apply only new migrations.
+
+### Manual apply (if migrate blocked)
+
+psql "$SUPABASE_DB_URL" -f drizzle/migrations/<new_file>.sql
+(Then insert its hash into drizzle.\_\_drizzle_migrations to keep state consistent.)
 
 Transition plan:
 

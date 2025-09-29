@@ -46,6 +46,7 @@ export class CheckBoxStack extends cdk.Stack {
       environment: {
         TABLE_NAME: table.tableName,
         METRIC_NAMESPACE: "event_adapter_dev",
+        MAX_RETRIES: "5", // align with SQS redrive maxReceiveCount
       },
       bundling: {
         externalModules: ["@aws-sdk/*"],
