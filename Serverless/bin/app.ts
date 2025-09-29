@@ -4,7 +4,7 @@ import { CheckBoxStack } from "../lib/checkbox-stack";
 const app = new App();
 new CheckBoxStack(app, "CheckboxCheckBoxStack", {
   env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION || "ap-southeast-1",
+    account: process.env.AWS_ACCOUNT_ID,
+    region: process.env.AWS_REGION || "ap-southeast-1",
   },
 });
