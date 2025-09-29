@@ -1,4 +1,4 @@
-import Example from "@/components/example";
+import Dashboard from "@/components/dashboard";
 import Report from "@/components/report";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 
@@ -21,7 +21,7 @@ export default function Home() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="dashboard">
-        <Example />
+        <Dashboard />
       </TabsContent>
       <TabsContent value="report">
         <Report />

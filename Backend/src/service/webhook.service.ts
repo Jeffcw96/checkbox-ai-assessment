@@ -17,3 +17,14 @@ export const handleContractEvent = async (event: any) => {
       console.log(`Unknown event operation: ${event}`);
   }
 };
+
+export const handleNewMatterCreation = async (matterData: any) => {
+  // Logic to create a new matter in the system
+  console.log("Creating new matter with data:", matterData);
+  // Extract comments and documents field
+
+  const { comments, documents, ...matterDetails } = matterData;
+
+  // Save matterDetails to the database
+  // Save comments and documents to their respective tables, linking them to the new matter
+};

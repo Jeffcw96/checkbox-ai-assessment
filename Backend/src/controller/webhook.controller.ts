@@ -5,7 +5,7 @@ export const handleWebhookEventController = async (
   req: Request,
   res: Response
 ) => {
-  const data = req.body;
+  const { payload } = req.body;
   //   req payload {
   //   payload: {
   //     event: 'contract.created',
@@ -20,12 +20,12 @@ export const handleWebhookEventController = async (
   //     }
   //   }
   // }
-  console.log("data", data, data.event);
+  console.log("data", payload, payload.event);
 
-  handleContractEvent(data.event);
+  handleContractEvent(payload.event);
 
   res.status(200).json({
-    payload: data.payload,
+    payload: payload,
     processed: true,
   });
 };

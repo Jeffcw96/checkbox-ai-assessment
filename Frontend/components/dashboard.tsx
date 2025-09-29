@@ -59,7 +59,7 @@ const users = Array.from({ length: 4 })
   .map(() => ({
     id: faker.string.uuid(),
     name: faker.person.fullName(),
-    image: faker.image.avatar(),
+    image: faker.image.personPortrait({ sex: "male" }),
   }));
 
 // Generate mocked matters (replace previous feature mocks)
@@ -146,7 +146,7 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
 });
-const Example = () => {
+const Dashboard = () => {
   const [matters, setMatters] = useState<Matter[]>(initialMatters);
   const latestMattersRef = useRef<Matter[]>(initialMatters);
   const [documents] = useState<Document[]>(initialDocuments);
@@ -318,4 +318,4 @@ const Example = () => {
     </>
   );
 };
-export default Example;
+export default Dashboard;

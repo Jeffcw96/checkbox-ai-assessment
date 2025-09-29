@@ -14,6 +14,166 @@ export type Database = {
   }
   public: {
     Tables: {
+      matter_comments: {
+        Row: {
+          author_id: string
+          created_at: string | null
+          id: string
+          matter_id: string
+          message: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          created_at?: string | null
+          id?: string
+          matter_id: string
+          message: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          created_at?: string | null
+          id?: string
+          matter_id?: string
+          message?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_comments_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_documents: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_url: string
+          id: string
+          matter_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_url: string
+          id?: string
+          matter_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+          matter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_status_history: {
+        Row: {
+          changed_at: string | null
+          id: string
+          matter_id: string
+          status: string
+        }
+        Insert: {
+          changed_at?: string | null
+          id?: string
+          matter_id: string
+          status: string
+        }
+        Update: {
+          changed_at?: string | null
+          id?: string
+          matter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_status_history_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matters: {
+        Row: {
+          assignee_id: string | null
+          contract_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          rank: number | null
+          requester_id: string | null
+          status: string
+          title: string
+          updated_at: string | null
+          version: number
+        }
+        Insert: {
+          assignee_id?: string | null
+          contract_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rank?: number | null
+          requester_id?: string | null
+          status: string
+          title: string
+          updated_at?: string | null
+          version?: number
+        }
+        Update: {
+          assignee_id?: string | null
+          contract_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rank?: number | null
+          requester_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matters_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string | null
@@ -38,6 +198,30 @@ export type Database = {
           name?: string
           picture?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
         }
         Relationships: []
       }
