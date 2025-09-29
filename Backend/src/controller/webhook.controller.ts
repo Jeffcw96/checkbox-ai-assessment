@@ -20,9 +20,9 @@ export const handleWebhookEventController = async (
   //     }
   //   }
   // }
-  console.log("req payload", data, data.payload.event);
+  console.log("data", data, data.event);
 
-  handleContractEvent(data.payload.event);
+  handleContractEvent(data.event);
 
   res.status(200).json({
     payload: data.payload,
