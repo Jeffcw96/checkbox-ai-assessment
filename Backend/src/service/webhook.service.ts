@@ -1,24 +1,19 @@
-export const handleContractEvent = async (eventOperation: any) => {
-  switch (eventOperation) {
-    case "create":
+export const handleContractEvent = async (event: any) => {
+  switch (event) {
+    case "contract.created":
       console.log("create event operation reroute");
       break;
-    case "update":
+    case "contract.updated":
       console.log("update event operation reroute");
       break;
-    case "delete":
+    case "contract.deleted":
       console.log("delete event operation reroute");
       break;
-    case "status_updated":
+    case "contract.status_updated":
       console.log("status_updated event operation reroute");
-    case "comment_added":
+    case "contract.comment_added":
       console.log("comment_added event operation reroute");
     default:
-      console.log(`Unknown event operation: ${eventOperation}`);
+      console.log(`Unknown event operation: ${event}`);
   }
-};
-
-export const findEventDomain = async (eventType: string) => {
-  const domain = eventType.split(".")[0];
-  return domain;
 };
