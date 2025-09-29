@@ -59,6 +59,7 @@ export type Database = {
       matter_documents: {
         Row: {
           created_at: string | null
+          document_id: string
           file_name: string
           file_url: string
           id: string
@@ -66,6 +67,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          document_id: string
           file_name: string
           file_url: string
           id?: string
@@ -73,6 +75,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          document_id?: string
           file_name?: string
           file_url?: string
           id?: string
@@ -230,7 +233,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_contract: {
+        Args: { payload: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

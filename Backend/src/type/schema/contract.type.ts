@@ -6,10 +6,12 @@ import { UserSchema } from "./user.type";
 export const ContractStatus = z.enum(["Draft", "In Review", "Done"]);
 
 export const ContractCreatedSchema = z.object({
+  eventId: z.string().optional(),
   event: z.literal("contract.created"),
   contract: z.object({
     id: z.string(),
     title: z.string(),
+    description: z.string().optional(),
     status: ContractStatus,
     createdAt: z.string(),
     comments: z.array(CommentSchema).optional(),

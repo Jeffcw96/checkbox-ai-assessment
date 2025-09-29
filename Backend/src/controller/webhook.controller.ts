@@ -6,7 +6,8 @@ export const handleWebhookEventController = async (
   req: Request,
   res: Response
 ) => {
-  const { payload } = req.body;
+  console.log("req.body", req.body);
+  const payload = req.body;
   //   req payload {
   //   payload: {
   //     event: 'contract.created',
@@ -28,10 +29,14 @@ export const handleWebhookEventController = async (
     throw AppError.badRequest(`No handler for event: ${payload.event}`);
   }
 
-  await eventHandler("asas");
+  const data = await eventHandler(payload);
+
+  if (data.isValid === false) {
+    throw AppError.badRequest(data.error);
+  }
 
   res.status(200).json({
-    payload: payload,
+    payload: data,
     processed: true,
   });
 };
