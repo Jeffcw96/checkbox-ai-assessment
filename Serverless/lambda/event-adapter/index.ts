@@ -37,7 +37,7 @@ export const handler = async (event: any) => {
     try {
       await axios.post(
         `${CHECKBOX_API_URL}/webhook`,
-        { eventID: eventID, ...payload },
+        { eventId: eventID, ...payload },
         {
           headers: {
             "Content-Type": "application/json",
