@@ -1,0 +1,97 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  CHECKBOX_API_URL: ${{ vars.CHECKBOX_API_URL }}
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Test & Synth
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: |
+            Webhook/package-lock.json
+            Serverless/package-lock.json
+
+      # Webhook tests (unit + integration)
+      - name: Webhook - Install dependencies
+        working-directory: ./Webhook
+        run: npm install
+
+      - name: Webhook - Run unit tests
+        working-directory: ./Webhook
+        run: npm run test:unit
+
+      - name: Webhook - Run integration tests
+        working-directory: ./Webhook
+        run: npm run test:integration
+
+      # Serverless (CDK) phase
+      - name: Serverless - Install dependencies
+        working-directory: ./Serverless
+        run: npm install
+
+      - name: Serverless - CDK synth
+        working-directory: ./Serverless
+        run: npx cdk synth
+        env:
+          CHECKBOX_API_URL: ${{ env.CHECKBOX_API_URL }}
+
+      - name: Upload cdk.out artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdk-out
+          path: ./Serverless/cdk.out/
+
+  deploy:
+    name: Deploy to AWS
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download cdk.out artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cdk-out
+          path: ./Serverless/cdk.out/
+
+      - name: Serverless - Install dependencies
+        working-directory: ./Serverless
+        run: npm install
+
+      - name: Serverless - CDK deploy
+        working-directory: ./Serverless
+        run: npx cdk deploy --all --require-approval=never
+        env:
+          CHECKBOX_API_URL: ${{ env.CHECKBOX_API_URL }}

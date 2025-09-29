@@ -24,6 +24,15 @@ CREATE TABLE matters (
   assignee_id UUID REFERENCES users(id)
 );
 
+
+-- Matters history table (for reporting)
+CREATE TABLE matter_status_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  matter_id UUID NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+  status TEXT NOT NULL,
+  changed_at TIMESTAMP DEFAULT now()
+);
+
 -- Comments
 CREATE TABLE comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
