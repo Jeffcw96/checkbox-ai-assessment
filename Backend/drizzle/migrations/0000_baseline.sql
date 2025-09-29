@@ -1,0 +1,3 @@
+-- Baseline migration (existing schema already created by Supabase migrations)
+-- Generate future changes via: npx drizzle-kit generate
+-- Intentionally empty to avoid re-creating existing tables.

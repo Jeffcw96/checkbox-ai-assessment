@@ -1,49 +1,14 @@
+import { eq } from "drizzle-orm";
+import { db as drizzleDb } from "../db/client";
+import {
+  matterComments,
+  matterDocuments,
+  matters,
+  matterStatusHistory,
+  webhookEvents,
+} from "../db/schema";
 import { ContractCreatedSchema } from "../type/schema/contract.type";
 import { UserMatterRole } from "../type/schema/user.type";
-import { db } from "../utils/database";
-
-// Minimal mock payload for insert_contract RPC
-export const mockInsertContractPayload = {
-  event: "contract.created",
-  status: "draft", // used by matter_history insert (payload->>'status')
-  contract: {
-    id: "ctr_min_001",
-    title: "NDA - Vendor",
-    status: "draft",
-    requester_id: "usr_req_001",
-    assignee_id: "usr_assignee_002",
-    comments: [
-      {
-        author_id: "usr_req_001",
-        message: "Please review ASAP.",
-        createdAt: new Date().toISOString(),
-      },
-      {
-        author_id: "usr_assignee_002",
-        message: "Acknowledged. Will revert today.",
-        createdAt: new Date().toISOString(),
-      },
-    ],
-    documents: [
-      {
-        id: "doc_min_001",
-        name: "NDA_Draft.pdf",
-        url: "https://example.com/contracts/ctr_min_001/NDA_Draft.pdf",
-      },
-    ],
-  },
-};
-
-// Optional: validate if schema still accepts minimal shape (may fail if schema requires extra fields)
-const _mockValidationCheck = ContractCreatedSchema.safeParse(
-  mockInsertContractPayload
-);
-if (!_mockValidationCheck.success) {
-  // eslint-disable-next-line no-console
-  console.warn(
-    "Minimal mock failed ContractCreatedSchema validation (adjust schema or enrich payload)."
-  );
-}
 
 export const getEventRouter = (): Record<
   string,
@@ -56,25 +21,20 @@ export const getEventRouter = (): Record<
     },
     "contract.updated": async (payload: any) => {
       console.log("Handling contract.updated event");
-      // Add your logic here
     },
     "contract.deleted": async (payload: any) => {
       console.log("Handling contract.deleted event");
-      // Add your logic here
     },
     "contract.status_updated": async (payload: any) => {
       console.log("Handling contract.status_updated event");
-      // Add your logic here
     },
     "contract.comment_added": async (payload: any) => {
       console.log("Handling contract.comment_added event");
-      // Add your logic here
     },
   };
 };
 
 export const handleNewMatterCreation = async (payload: any) => {
-  // Logic to create a new matter in the system
   console.log("Creating new matter with data:", payload);
   // Extract comments and documents field
 
@@ -101,25 +61,67 @@ export const handleNewMatterCreation = async (payload: any) => {
     (user) => user.role.toUpperCase() === UserMatterRole.ASSIGNEE
   )?.id;
 
-  const { data, error } = await db.rpc("insert_contract", {
-    eventId: parsed.data.eventId,
-    contractId: matterDetails.id,
-    title: matterDetails.title,
-    description: matterDetails.description,
-    status: matterDetails.status,
-    requesterId,
-    assigneeId,
-    comments,
-    documents,
+  const result = await drizzleDb.transaction(async (tx) => {
+    // Upsert webhook event first for idempotency
+    const eventId = parsed.data.eventId ?? `evt_${matterDetails.id}`;
+    const existing = await tx
+      .select({ id: webhookEvents.id })
+      .from(webhookEvents)
+      .where(eq(webhookEvents.eventId, eventId))
+      .limit(1);
+    if (existing.length) {
+      return { skipped: true, reason: "event_already_processed" };
+    }
+
+    const insertedMatter = await tx
+      .insert(matters)
+      .values({
+        contractId: matterDetails.id,
+        title: matterDetails.title,
+        description: matterDetails.description,
+        status: matterDetails.status,
+        requesterId,
+        assigneeId,
+      })
+      .returning({ id: matters.id });
+
+    const matterId = insertedMatter[0].id;
+
+    if (comments?.length) {
+      await tx.insert(matterComments).values(
+        comments.map((c) => ({
+          matterId,
+          authorId: (c as any).author ?? (c as any).author_id, // schema vs sample mismatch
+          message: c.message,
+          // created_at default handled by DB
+        }))
+      );
+    }
+
+    if (documents?.length) {
+      await tx.insert(matterDocuments).values(
+        documents.map((d) => ({
+          matterId,
+          documentId: d.id,
+          fileName: d.name,
+          fileUrl: d.url,
+        }))
+      );
+    }
+
+    await tx.insert(matterStatusHistory).values({
+      matterId,
+      status: matterDetails.status,
+    });
+
+    await tx.insert(webhookEvents).values({
+      eventId,
+      eventType: parsed.data.event,
+      payload,
+    });
+
+    return { skipped: false, matterId };
   });
 
-  if (error) {
-    console.error("Error inserting contract:", error);
-    return { isValid: false, error: error.message };
-  }
-
-  return { isValid: true, data };
-
-  // Save matterDetails to the database
-  // Save comments and documents to their respective tables, linking them to the new matter
+  return { isValid: true, data: result };
 };

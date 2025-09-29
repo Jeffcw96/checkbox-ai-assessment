@@ -1,11 +1,8 @@
-import { db } from "../utils/database";
+import { eq } from "drizzle-orm";
+import { db } from "../db/client";
+import { users } from "../db/schema";
 
 export const getUserByEmailService = async (email: string) => {
-  const { data, error } = await db
-    .from("users")
-    .select("*")
-    .eq("email", email)
-    .single();
-
+  const data = await db.select().from(users).where(eq(users.email, email));
   return { data };
 };

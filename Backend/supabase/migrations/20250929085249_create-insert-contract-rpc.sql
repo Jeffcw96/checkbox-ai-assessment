@@ -20,7 +20,8 @@ begin
   returning id into v_matter_id;
 
   -- Insert into history
-  insert into matter_history (matter_id, status)
+  -- Correct table name (existing DDL: matter_status_history)
+  insert into matter_status_history (matter_id, status)
   values (v_matter_id, payload->>'status');
 
   -- Insert comments
