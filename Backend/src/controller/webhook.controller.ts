@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { handleContractEvent } from "../service/webhook.service";
+import { getEventRouter } from "../service/webhook.service";
+import { AppError } from "../utils/appError";
 
 export const handleWebhookEventController = async (
   req: Request,
@@ -21,8 +22,13 @@ export const handleWebhookEventController = async (
   //   }
   // }
   console.log("data", payload, payload.event);
+  const eventRouter = getEventRouter();
+  const eventHandler = eventRouter[payload.event];
+  if (!eventHandler) {
+    throw AppError.badRequest(`No handler for event: ${payload.event}`);
+  }
 
-  handleContractEvent(payload.event);
+  await eventHandler("asas");
 
   res.status(200).json({
     payload: payload,
