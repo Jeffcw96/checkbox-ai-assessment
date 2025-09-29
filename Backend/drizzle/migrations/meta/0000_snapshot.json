@@ -1,11 +1,11 @@
 {
-  "id": "761ce3e3-3d90-4823-8192-d2344abb9278",
+  "id": "349713da-5c90-4d28-835c-bd8e00868b6b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.matter_comments": {
-      "name": "matter_comments",
+    "public.contract_comments": {
+      "name": "contract_comments",
       "schema": "",
       "columns": {
         "id": {
@@ -15,9 +15,9 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "matter_id": {
-          "name": "matter_id",
-          "type": "uuid",
+        "contract_id": {
+          "name": "contract_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -49,11 +49,11 @@
         }
       },
       "indexes": {
-        "idx_matter_comments_matter_id": {
-          "name": "idx_matter_comments_matter_id",
+        "idx_contract_comments_contract_id": {
+          "name": "idx_contract_comments_contract_id",
           "columns": [
             {
-              "expression": "matter_id",
+              "expression": "contract_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -64,8 +64,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_matter_comments_author_id": {
-          "name": "idx_matter_comments_author_id",
+        "idx_contract_comments_author_id": {
+          "name": "idx_contract_comments_author_id",
           "columns": [
             {
               "expression": "author_id",
@@ -81,12 +81,12 @@
         }
       },
       "foreignKeys": {
-        "matter_comments_matter_id_matters_id_fk": {
-          "name": "matter_comments_matter_id_matters_id_fk",
-          "tableFrom": "matter_comments",
-          "tableTo": "matters",
+        "contract_comments_contract_id_contracts_id_fk": {
+          "name": "contract_comments_contract_id_contracts_id_fk",
+          "tableFrom": "contract_comments",
+          "tableTo": "contracts",
           "columnsFrom": [
-            "matter_id"
+            "contract_id"
           ],
           "columnsTo": [
             "id"
@@ -94,10 +94,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "matter_comments_author_id_users_id_fk": {
-          "name": "matter_comments_author_id_users_id_fk",
-          "tableFrom": "matter_comments",
-          "tableTo": "users",
+        "contract_comments_author_id_matter_users_id_fk": {
+          "name": "contract_comments_author_id_matter_users_id_fk",
+          "tableFrom": "contract_comments",
+          "tableTo": "matter_users",
           "columnsFrom": [
             "author_id"
           ],
@@ -114,8 +114,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.matter_documents": {
-      "name": "matter_documents",
+    "public.contract_documents": {
+      "name": "contract_documents",
       "schema": "",
       "columns": {
         "id": {
@@ -125,9 +125,9 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "matter_id": {
-          "name": "matter_id",
-          "type": "uuid",
+        "contract_id": {
+          "name": "contract_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -158,11 +158,11 @@
         }
       },
       "indexes": {
-        "idx_matter_documents_matter_id": {
-          "name": "idx_matter_documents_matter_id",
+        "idx_contract_documents_contract_id": {
+          "name": "idx_contract_documents_contract_id",
           "columns": [
             {
-              "expression": "matter_id",
+              "expression": "contract_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -173,8 +173,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_matter_documents_document_id": {
-          "name": "idx_matter_documents_document_id",
+        "idx_contract_documents_document_id": {
+          "name": "idx_contract_documents_document_id",
           "columns": [
             {
               "expression": "document_id",
@@ -190,12 +190,12 @@
         }
       },
       "foreignKeys": {
-        "matter_documents_matter_id_matters_id_fk": {
-          "name": "matter_documents_matter_id_matters_id_fk",
-          "tableFrom": "matter_documents",
-          "tableTo": "matters",
+        "contract_documents_contract_id_contracts_id_fk": {
+          "name": "contract_documents_contract_id_contracts_id_fk",
+          "tableFrom": "contract_documents",
+          "tableTo": "contracts",
           "columnsFrom": [
-            "matter_id"
+            "contract_id"
           ],
           "columnsTo": [
             "id"
@@ -210,8 +210,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.matter_status_history": {
-      "name": "matter_status_history",
+    "public.contract_status_history": {
+      "name": "contract_status_history",
       "schema": "",
       "columns": {
         "id": {
@@ -221,9 +221,9 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "matter_id": {
-          "name": "matter_id",
-          "type": "uuid",
+        "contract_id": {
+          "name": "contract_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -242,11 +242,11 @@
         }
       },
       "indexes": {
-        "idx_matter_status_history_matter_id": {
-          "name": "idx_matter_status_history_matter_id",
+        "idx_contract_status_history_contract_id": {
+          "name": "idx_contract_status_history_contract_id",
           "columns": [
             {
-              "expression": "matter_id",
+              "expression": "contract_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -259,12 +259,12 @@
         }
       },
       "foreignKeys": {
-        "matter_status_history_matter_id_matters_id_fk": {
-          "name": "matter_status_history_matter_id_matters_id_fk",
-          "tableFrom": "matter_status_history",
-          "tableTo": "matters",
+        "contract_status_history_contract_id_contracts_id_fk": {
+          "name": "contract_status_history_contract_id_contracts_id_fk",
+          "tableFrom": "contract_status_history",
+          "tableTo": "contracts",
           "columnsFrom": [
-            "matter_id"
+            "contract_id"
           ],
           "columnsTo": [
             "id"
@@ -279,21 +279,14 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.matters": {
-      "name": "matters",
+    "public.contracts": {
+      "name": "contracts",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "contract_id": {
-          "name": "contract_id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "requester_id": {
@@ -355,8 +348,8 @@
         }
       },
       "indexes": {
-        "idx_matters_requester_id": {
-          "name": "idx_matters_requester_id",
+        "idx_contracts_requester_id": {
+          "name": "idx_contracts_requester_id",
           "columns": [
             {
               "expression": "requester_id",
@@ -370,8 +363,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_matters_assignee_id": {
-          "name": "idx_matters_assignee_id",
+        "idx_contracts_assignee_id": {
+          "name": "idx_contracts_assignee_id",
           "columns": [
             {
               "expression": "assignee_id",
@@ -387,10 +380,10 @@
         }
       },
       "foreignKeys": {
-        "matters_requester_id_users_id_fk": {
-          "name": "matters_requester_id_users_id_fk",
-          "tableFrom": "matters",
-          "tableTo": "users",
+        "contracts_requester_id_matter_users_id_fk": {
+          "name": "contracts_requester_id_matter_users_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "matter_users",
           "columnsFrom": [
             "requester_id"
           ],
@@ -400,10 +393,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "matters_assignee_id_users_id_fk": {
-          "name": "matters_assignee_id_users_id_fk",
-          "tableFrom": "matters",
-          "tableTo": "users",
+        "contracts_assignee_id_matter_users_id_fk": {
+          "name": "contracts_assignee_id_matter_users_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "matter_users",
           "columnsFrom": [
             "assignee_id"
           ],
@@ -416,11 +409,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "matters_contract_id_unique": {
-          "name": "matters_contract_id_unique",
+        "contracts_id_unique": {
+          "name": "contracts_id_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "contract_id"
+            "id"
           ]
         }
       },
@@ -428,8 +421,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
-      "name": "users",
+    "public.matter_users": {
+      "name": "matter_users",
       "schema": "",
       "columns": {
         "id": {
@@ -476,8 +469,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "matter_users_email_unique": {
+          "name": "matter_users_email_unique",
           "nullsNotDistinct": false,
           "columns": [
             "email"

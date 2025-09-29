@@ -5,6 +5,7 @@
     "build": "tsc",
     "migration:push": "npx drizzle-kit push",
     "migration:migrate": "npx drizzle-kit migrate",
+    "gen:types": "npx drizzle-kit generate",
     "start": "TS_NODE_BASEURL=./dist node dist/index.js",
     "dev": "ts-node-dev src/index.ts"
   },

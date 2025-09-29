@@ -8,7 +8,7 @@ export const UserSchema = z.object({
 
 export type UserSchemaType = z.infer<typeof UserSchema>;
 
-export enum UserMatterRole {
+export enum UserContractRole {
   REQUESTER = "REQUESTER",
   ASSIGNEE = "ASSIGNEE",
 }

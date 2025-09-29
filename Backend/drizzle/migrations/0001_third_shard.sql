@@ -1,1 +1,0 @@
-ALTER TABLE "matters" DROP CONSTRAINT "matters_contract_id_unique";
