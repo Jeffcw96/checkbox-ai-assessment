@@ -1,12 +1,8 @@
 import express from "express";
-import {
-  handleWebhookEvent,
-  postBackendAPIForTesting,
-} from "../controller/webhook.controller";
+import { handleWebhookEvent } from "../controller/webhook.controller";
 
 const webhookRouter = express.Router();
 
-webhookRouter.post("/contracts", postBackendAPIForTesting);
-webhookRouter.post("/events", handleWebhookEvent);
+webhookRouter.post("/contracts", handleWebhookEvent);
 
 export { webhookRouter };

@@ -10,6 +10,7 @@ export const ContractCreatedSchema = z.object({
   contract: z.object({
     id: z.string(),
     title: z.string(),
+    description: z.string().optional(),
     status: ContractStatus,
     createdAt: z.string(),
     comments: z.array(CommentSchema).optional(),
