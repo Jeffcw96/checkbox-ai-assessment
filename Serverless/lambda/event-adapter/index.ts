@@ -35,13 +35,24 @@ export const handler = async (event: any) => {
 
     let apiSucceeded = false;
     try {
-      await axios.get(`${CHECKBOX_API_URL}/user`, { timeout: 3000 });
+      await axios.post(
+        `${CHECKBOX_API_URL}/webhook`,
+        { payload },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       apiSucceeded = true;
     } catch {
       apiSucceeded = false;
     }
 
     const status = apiSucceeded ? "PROCESSED" : "PENDING";
+
+    console.log("statussss", status);
+    console.log("CHECKBOX_API_URL", CHECKBOX_API_URL);
 
     const item = {
       eventID: { S: eventID },
@@ -69,6 +80,7 @@ export const handler = async (event: any) => {
       };
     }
 
+    console.log("putParams", putParams);
     try {
       await dynamoDBClient.send(new PutItemCommand(putParams));
       datadogMeticStub(
