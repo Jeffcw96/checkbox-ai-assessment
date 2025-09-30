@@ -75,8 +75,9 @@ Production dashboard URL: https://checkbox-ai-assessment.vercel.app/
 1. Make sure you have docker installed in your local machine
 2. Clone the repository
 3. `make up`
-4. cd into `Frontend`, `yarn install` and `yarn dev` to start the frontend application
-5. That's it! You can start testing the API using Postman or any API testing tool. Feel free to validate against in Docker GUI. ![Docker GUI Screenshot](./README_ASSETS/docker-gui.jpg)
+4. cd into `Frontend` folder and create a `.env` file based on the `.env.example` file
+5. `yarn install` and `yarn dev` to start the frontend application
+6. That's it! You can start testing the API using Postman or any API testing tool. Feel free to validate against in Docker GUI. ![Docker GUI Screenshot](./README_ASSETS/docker-gui.jpg)
 
 ### Postman Collection
 
