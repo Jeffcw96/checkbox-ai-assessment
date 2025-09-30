@@ -25,7 +25,6 @@ export function useGetUser(
   return useQuery<User, AxiosError>({
     queryKey: USER_QUERY_KEY,
     queryFn: fetchUser,
-    // using defaults from ReactQueryProvider (refetchOnWindowFocus disabled there)
     ...options,
   });
 }

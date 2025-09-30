@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getContractComments } from "../service/comment.service";
 import { getContractById, getContracts } from "../service/contract.service";
-import { getContractDocument } from "../service/document.service";
+import { getContractDocuments } from "../service/document.service";
 import { AppError } from "../utils/appError";
 
 export const getContractsController = async (req: Request, res: Response) => {
@@ -25,7 +25,7 @@ export const getContractCommentsController = async (
   req: Request,
   res: Response
 ) => {
-  const contractId = req.params.id;
+  const contractId = req.params.contractId;
   const contract = await getContractById(contractId);
   if (!contract) {
     throw AppError.notFound(`Contract with id ${contractId} not found`);
@@ -40,12 +40,13 @@ export const getContractDocumentController = async (
   req: Request,
   res: Response
 ) => {
-  const contractId = req.params.id;
+  const contractId = req.params.contractId;
+  console.log("contractId", contractId);
   const contract = await getContractById(contractId);
   if (!contract) {
     throw AppError.notFound(`Contract with id ${contractId} not found`);
   }
 
-  const documents = await getContractDocument(contractId);
+  const documents = await getContractDocuments(contractId);
   res.status(200).json(documents);
 };

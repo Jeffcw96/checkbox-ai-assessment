@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { db } from "../db/client";
 import { contracts, contractStatusHistory } from "../db/schema";
 
 export interface ContractsByStatus {
@@ -9,7 +10,7 @@ export interface ContractsByStatus {
 export interface AverageStatusCycleTime {
   status: string;
   averageDurationSeconds: number;
-  averageDurationHuman: string;
+  averageDurationLabel: string;
 }
 
 export interface ReportingResult {
@@ -22,7 +23,7 @@ export interface ReportingResult {
  * getReport
  * @param db Drizzle database instance (pass your configured db)
  */
-export async function getReport(db: any): Promise<ReportingResult> {
+export async function getReport(): Promise<ReportingResult> {
   // 1. Total number of contracts
   const totalContractsRes = await db
     .select({ count: sql<number>`count(*)` })
@@ -46,49 +47,37 @@ export async function getReport(db: any): Promise<ReportingResult> {
     })
   );
 
-  // 3. Average cycle time a contract sits in each status before moving
-  // Uses window function LEAD to get the next changed_at per contract.
-  const averageStatusCycleTimeRaw = await db.execute(sql`
-    with ordered as (
-      select
+  const result = await db.execute(sql`
+    WITH status_durations AS (
+      SELECT
         csh.contract_id,
         csh.status,
-        csh.changed_at,
-        lead(csh.changed_at) over (
-          partition by csh.contract_id
-          order by csh.changed_at
-        ) as next_changed_at
-      from ${contractStatusHistory} csh
-    ),
-    durations as (
-      select
-        status,
-        extract(epoch from (next_changed_at - changed_at)) as duration_seconds
-      from ordered
-      where next_changed_at is not null -- exclude current/open terminal status
+        EXTRACT(EPOCH FROM (
+          LEAD(csh.changed_at) OVER (
+            PARTITION BY csh.contract_id ORDER BY csh.changed_at
+          ) - csh.changed_at
+        )) AS duration_seconds
+      FROM ${contractStatusHistory} csh
     )
-    select
+    SELECT
       status,
-      avg(duration_seconds)::float as average_duration_seconds
-    from durations
-    group by status
-    order by status;
+      AVG(duration_seconds) AS avg_duration_seconds
+    FROM status_durations
+    WHERE duration_seconds IS NOT NULL
+    GROUP BY status
   `);
-
-  const averageStatusCycleTime: AverageStatusCycleTime[] =
-    (averageStatusCycleTimeRaw as any).rows?.map((row: any) => {
-      const seconds = Number(row.average_duration_seconds);
-      return {
-        status: row.status,
-        averageDurationSeconds: seconds,
-        averageDurationHuman: humanizeDuration(seconds),
-      };
-    }) ?? [];
 
   return {
     totalContracts,
     contractsByStatus,
-    averageStatusCycleTime,
+    averageStatusCycleTime: result.map((row: any) => {
+      const seconds = Number(row.avg_duration_seconds);
+      return {
+        status: row.status,
+        averageDurationSeconds: seconds,
+        averageDurationLabel: humanizeDuration(seconds),
+      };
+    }),
   };
 }
 

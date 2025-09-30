@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../db/client";
 import {
@@ -238,3 +238,6 @@ export const getContractById = async (contractId: string) => {
 
   return contract;
 };
+function leftJoin(requester: any, arg1: SQL<unknown>) {
+  throw new Error("Function not implemented.");
+}

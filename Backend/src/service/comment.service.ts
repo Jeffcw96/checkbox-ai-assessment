@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "../db/client";
 import {
   contractComments,
@@ -86,7 +86,7 @@ export const getContractComments = async (contractId: string) => {
     .from(contractComments)
     .leftJoin(users, eq(users.id, contractComments.authorId))
     .where(eq(contractComments.contractId, contractId))
-    .orderBy(asc(contractComments.createdAt));
+    .orderBy(desc(contractComments.createdAt));
 
   return rows.map((r) => ({
     id: r.id,
@@ -97,7 +97,7 @@ export const getContractComments = async (contractId: string) => {
     author: {
       id: r.authorId,
       name: r.authorName,
-      picture: r.authorPicture,
+      image: r.authorPicture,
     },
   }));
 };

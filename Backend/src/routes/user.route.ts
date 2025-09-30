@@ -1,8 +1,12 @@
 import express from "express";
-import { getUserByEmailController } from "../controller/user.controller";
+import {
+  getUserByEmailController,
+  getUsersController,
+} from "../controller/user.controller";
 
 const userRouter = express.Router();
 
-userRouter.get("/", getUserByEmailController);
+userRouter.get("/", getUsersController);
+userRouter.get("/email", getUserByEmailController);
 
 export { userRouter };

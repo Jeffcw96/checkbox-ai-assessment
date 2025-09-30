@@ -7,135 +7,30 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
-import { faker } from "@faker-js/faker";
-import { useRef, useState } from "react";
-import { MatterDetails } from "./matter-details";
+import { useGetContracts } from "@/hooks/service/useGetContracts";
+import { useEffect, useRef, useState } from "react";
+import { ContractDetails } from "./contract-details";
 
-// Backend (snake_case) columns will be transformed to this camelCase shape later.
-export interface Comment {
+export interface KanbanContract {
   id: string;
-  matterId: string;
-  message: string;
+  title: string;
+  description?: string;
+  rank: number | undefined;
+  status: string;
+  version: number;
   createdAt: Date;
-  author: {
-    id: string;
-    name: string;
-    image: string;
-  };
-}
-export interface Document {
-  id: string;
-  matterId: string;
-  name: string;
-  url: string;
-  createdAt: Date;
-}
-export interface Matter {
-  id: string; // id
-  contractId: string; // contract_id
-  title: string; // title
-  description?: string; // description
-  rank: number | undefined; // rank (numeric)
-  status: string; // status
-  version: number; // version
-  createdAt: Date; // created_at
-  updatedAt: Date; // updated_at
-  requesterId?: string; // requester_id
-  assigneeId?: string; // assignee_id
+  updatedAt: Date;
   requester?: { id: string; name: string; image: string };
   assignee?: { id: string; name: string; image: string };
-  // Kanban-specific (derived):
-  column: string; // mirrors status
-  name: string; // alias for KanbanCard (use title)
+  column: string;
+  name: string;
 }
 
 const columns = [
-  { id: "PLANNED", name: "Planned", color: "#6B7280" },
-  { id: "IN_PROGRESS", name: "In Progress", color: "#F59E0B" },
-  { id: "DONE", name: "Done", color: "#10B981" },
+  { id: "Draft", name: "Draft", color: "#6B7280" },
+  { id: "In Review", name: "In Review", color: "#F59E0B" },
+  { id: "Done", name: "Done", color: "#10B981" },
 ];
-const users = Array.from({ length: 4 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: faker.person.fullName(),
-    image: faker.image.personPortrait({ sex: "male" }),
-  }));
-
-// Generate mocked matters (replace previous feature mocks)
-const mockedContracts: Matter[] = Array.from({ length: 8 }).map((_v, idx) => {
-  const status = faker.helpers.arrayElement(columns).id;
-  const requester = faker.helpers.arrayElement(users);
-  const assignee = faker.helpers.arrayElement(users);
-  // Ensure deterministic date ordering
-  const createdAt = faker.date.past({ years: 0.25 });
-  const updatedAt = faker.date.between({ from: createdAt, to: new Date() });
-  return {
-    id: faker.string.uuid(),
-    contractId: faker.string.alphanumeric({ length: 10 }).toUpperCase(),
-    title: faker.company.catchPhrase(),
-    description: faker.lorem.sentences({ min: 1, max: 2 }),
-    rank: undefined, // will be filled per column
-    status,
-    version: 0,
-    createdAt,
-    updatedAt,
-    requesterId: requester.id,
-    assigneeId: assignee.id,
-    requester,
-    assignee,
-    column: status,
-    name: "", // set after
-  } as Matter;
-});
-
-// Initialize name + rank per column with gaps
-const initialMatters: Matter[] = (() => {
-  const copy = mockedContracts.map((m) => ({ ...m, name: m.title }));
-  columns.forEach((col) => {
-    let r = 1;
-    copy
-      .filter((m) => m.column === col.id)
-      .forEach((m) => {
-        m.rank = r++ * 1000;
-      });
-  });
-  return copy;
-})();
-
-// Mock documents & comments per matter
-const initialDocuments: Document[] = initialMatters.flatMap((m) =>
-  Array.from({ length: faker.number.int({ min: 0, max: 3 }) }).map(() => {
-    const [from, to] =
-      m.createdAt <= m.updatedAt
-        ? [m.createdAt, m.updatedAt]
-        : [m.updatedAt, m.createdAt];
-    return {
-      id: faker.string.uuid(),
-      matterId: m.id,
-      name: faker.system.commonFileName(faker.system.commonFileExt()),
-      url: faker.internet.url(),
-      createdAt: faker.date.between({ from, to }),
-    };
-  })
-);
-
-const initialComments: Comment[] = initialMatters.flatMap((m) =>
-  Array.from({ length: faker.number.int({ min: 1, max: 5 }) }).map(() => {
-    const author = faker.helpers.arrayElement(users);
-    const [from, to] =
-      m.createdAt <= m.updatedAt
-        ? [m.createdAt, m.updatedAt]
-        : [m.updatedAt, m.createdAt];
-    return {
-      id: faker.string.uuid(),
-      matterId: m.id,
-      message: faker.lorem.sentences({ min: 1, max: 2 }),
-      createdAt: faker.date.between({ from, to }),
-      author,
-    } as Comment;
-  })
-);
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -146,58 +41,74 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
 });
-const Dashboard = () => {
-  const [matters, setMatters] = useState<Matter[]>(initialMatters);
-  const latestMattersRef = useRef<Matter[]>(initialMatters);
-  const [documents] = useState<Document[]>(initialDocuments);
-  const [comments] = useState<Comment[]>(initialComments);
 
-  const [selectedMatter, setSelectedMatter] = useState<Matter | null>(null);
+const Dashboard = () => {
+  const [contracts, setContracts] = useState<KanbanContract[]>([]);
+  const latestContractRef = useRef<KanbanContract[]>([]);
+
+  const { data: apiContracts, isLoading } = useGetContracts();
+
+  const [selectedContract, setSelectedContract] =
+    useState<KanbanContract | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const openMatter = (m: Matter) => {
-    setSelectedMatter(m);
+  const openContract = (m: KanbanContract) => {
+    setSelectedContract(m);
     setDetailsOpen(true);
   };
 
-  // Track pointer to distinguish click vs drag
   const pointerRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
   const CLICK_MOVE_PX = 5;
   const CLICK_TIME_MS = 300;
 
-  const handleDataChange = (newData: Matter[]) => {
-    setMatters([...newData]);
-    latestMattersRef.current = [...newData];
-  };
+  useEffect(() => {
+    if (!apiContracts) return;
+    const transformed: KanbanContract[] = apiContracts.map((c) => ({
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      rank: c.rank ?? undefined,
+      status: c.status,
+      version: c.version,
+      createdAt: new Date(c.createdAt),
+      updatedAt: new Date(c.updatedAt),
+      requester: c.requester,
+      assignee: c.assignee,
+      column: c.status,
+      name: c.title,
+    }));
 
-  const handleSync = (payload: {
-    id: string;
-    column: string;
-    rank: number;
-  }) => {
-    console.log("latest features snapshot", latestMattersRef.current);
-    console.log("sync payload", payload);
-    // Placeholder for future PATCH /api/matters/:id
-    const { column, id } = payload;
-    const filteredColumn = latestMattersRef.current.filter(
-      (m) => m.column === column
-    );
-    const index = filteredColumn.findIndex((m) => m.id === id);
-    const before = filteredColumn[index - 1];
-    const after = filteredColumn[index + 1];
+    // Map-based rank fill (replaces previous columns.forEach)
+    const idToRank = new Map<string, number>();
+    columns
+      .map((col) => {
+        let next = 1000;
+        return transformed
+          .filter((m) => m.column === col.id)
+          .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+          .map((m) => {
+            const rank =
+              m.rank == null || isNaN(m.rank) ? next : (m.rank as number);
+            idToRank.set(m.id, rank);
+            next = rank + 1000;
+            return m;
+          });
+      })
+      .flat();
 
-    console.log("index", index);
-    console.log("before", before);
-    console.log("after", after);
-    console.log("filteredColumn", filteredColumn);
+    const finalTransformed = transformed.map((m) => ({
+      ...m,
+      rank: idToRank.get(m.id),
+    }));
 
-    const apiPayload = {
-      id,
-      rank: calculateRank(before?.rank, after?.rank),
-      status: column, // backend expects status (snake_case later)
-    };
-    console.log("sync payload", apiPayload);
+    setContracts(finalTransformed);
+    latestContractRef.current = finalTransformed;
+  }, [apiContracts]);
+
+  const handleDataChange = (newData: KanbanContract[]) => {
+    setContracts([...newData]);
+    latestContractRef.current = [...newData];
   };
 
   const calculateRank = (before?: number, after?: number) => {
@@ -207,14 +118,40 @@ const Dashboard = () => {
     return (before + after) / 2;
   };
 
+  const handleSync = (payload: {
+    id: string;
+    column: string;
+    rank: number;
+  }) => {
+    console.log("latest features snapshot", latestContractRef.current);
+    console.log("sync payload", payload);
+    const { column, id } = payload;
+    const filteredColumn = latestContractRef.current.filter(
+      (m) => m.column === column
+    );
+    const index = filteredColumn.findIndex((m) => m.id === id);
+    const before = filteredColumn[index - 1];
+    const after = filteredColumn[index + 1];
+    console.log("index", index);
+    console.log("before", before);
+    console.log("after", after);
+    console.log("filteredColumn", filteredColumn);
+    const apiPayload = {
+      id,
+      rank: calculateRank(before?.rank, after?.rank),
+      status: column,
+    };
+    console.log("sync payload", apiPayload);
+  };
+
   return (
     <>
       <KanbanProvider
         columns={columns}
-        data={matters}
+        data={contracts}
         onDataChange={handleDataChange}
         onSync={handleSync}
-        canMoveCard={({ fromColumn, toColumn }) => fromColumn === toColumn} // keep disabled for now
+        canMoveCard={({ fromColumn, toColumn }) => fromColumn === toColumn}
       >
         {(column) => (
           <KanbanBoard id={column.id} key={column.id}>
@@ -225,17 +162,21 @@ const Dashboard = () => {
                   style={{ backgroundColor: column.color }}
                 />
                 <span>{column.name}</span>
+                {isLoading && (
+                  <span className="text-xs text-muted-foreground">
+                    Loading...
+                  </span>
+                )}
               </div>
             </KanbanHeader>
             <KanbanCards id={column.id}>
-              {(matter: Matter) => (
+              {(contract: KanbanContract) => (
                 <KanbanCard
                   column={column.id}
-                  id={matter.id}
-                  key={matter.id}
-                  name={matter.title}
-                  rank={matter.rank}
-                  // onClick removed: drag engine likely swallows it
+                  id={contract.id}
+                  key={contract.id}
+                  name={contract.title}
+                  rank={contract.rank}
                 >
                   <div
                     role="button"
@@ -260,31 +201,31 @@ const Dashboard = () => {
                         dt <= CLICK_TIME_MS
                       ) {
                         e.stopPropagation();
-                        openMatter(matter);
+                        openContract(contract);
                       }
                     }}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">
                         <p className="m-0 flex-1 font-medium text-sm">
-                          {matter.title}
+                          {contract.title}
                         </p>
                         <p className="m-0 text-[10px] uppercase tracking-wide text-muted-foreground">
-                          {matter.contractId}
+                          {contract.id}
                         </p>
                       </div>
-                      {matter.assignee && (
+                      {contract.assignee && (
                         <Avatar className="h-4 w-4 shrink-0">
-                          <AvatarImage src={matter.assignee.image} />
+                          <AvatarImage src={contract.assignee.image} />
                           <AvatarFallback>
-                            {matter.assignee.name.slice(0, 2)}
+                            {contract.assignee.name.slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
                       )}
                     </div>
                     <p className="m-0 text-muted-foreground text-xs">
-                      {shortDateFormatter.format(matter.createdAt)} -{" "}
-                      {dateFormatter.format(matter.updatedAt)}
+                      {shortDateFormatter.format(contract.createdAt)} -{" "}
+                      {dateFormatter.format(contract.updatedAt)}
                     </p>
                   </div>
                 </KanbanCard>
@@ -293,25 +234,11 @@ const Dashboard = () => {
           </KanbanBoard>
         )}
       </KanbanProvider>
-      <MatterDetails
-        matter={selectedMatter}
-        comments={
-          selectedMatter
-            ? comments
-                .filter((c) => c.matterId === selectedMatter.id)
-                .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-            : []
-        }
-        documents={
-          selectedMatter
-            ? documents
-                .filter((d) => d.matterId === selectedMatter.id)
-                .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-            : []
-        }
+      <ContractDetails
+        contractId={selectedContract ? selectedContract.id : null}
         open={detailsOpen}
         onOpenChange={(o) => {
-          if (!o) setSelectedMatter(null);
+          if (!o) setSelectedContract(null);
           setDetailsOpen(o);
         }}
       />
