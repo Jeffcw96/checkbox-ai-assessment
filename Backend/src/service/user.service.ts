@@ -11,3 +11,8 @@ export const getUsers = async () => {
   const data = await db.select().from(users);
   return { data };
 };
+
+export const createUser = async (email: string, name: string) => {
+  const [user] = await db.insert(users).values({ email, name }).returning();
+  return { data: user };
+};
