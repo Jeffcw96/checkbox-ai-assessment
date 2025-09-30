@@ -1,7 +1,10 @@
 {
   "name": "express",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --passWithNoTests",
+    "test:unit": "jest --passWithNoTests tests/unit",
+    "test:integration": "jest --passWithNoTests tests/integration",
+    "test:watch": "jest --watch",
     "build": "tsc",
     "migration:push": "npx drizzle-kit push",
     "migration:migrate": "npx drizzle-kit migrate",
@@ -13,18 +16,23 @@
     "@supabase/supabase-js": "^2.58.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "5.1.0",
-    "supabase": "^2.45.5",
-    "zod": "^4.1.11",
     "drizzle-orm": "^0.44.5",
-    "postgres": "^3.4.7"
+    "express": "5.1.0",
+    "postgres": "^3.4.7",
+    "supabase": "^2.45.5",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "5.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.17",
+    "@types/supertest": "^6.0.3",
+    "drizzle-kit": "^0.31.5",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.4",
     "ts-node-dev": "^2.0.0",
-    "typescript": "5.8.3",
-    "drizzle-kit": "^0.31.5"
+    "typescript": "5.8.3"
   }
 }

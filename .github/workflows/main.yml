@@ -38,6 +38,23 @@ jobs:
         working-directory: ./Webhook
         run: npm run test:unit
 
+      - name: Webhook - Run integration tests
+        working-directory: ./Webhook
+        run: npm run test:integration
+
+      # Backend tests (unit + integration)
+      - name: Backend - Install dependencies
+        working-directory: ./Backend
+        run: npm install
+
+      - name: Backend - Run unit tests
+        working-directory: ./Backend
+        run: npm run test:unit
+
+      - name: Backend - Run integration tests
+        working-directory: ./Backend
+        run: npm run test:integration
+
       # Serverless (CDK) phase
       - name: Serverless - Install dependencies
         working-directory: ./Serverless

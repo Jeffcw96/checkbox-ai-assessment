@@ -19,10 +19,6 @@ export interface ReportingResult {
   averageStatusCycleTime: AverageStatusCycleTime[];
 }
 
-/**
- * getReport
- * @param db Drizzle database instance (pass your configured db)
- */
 export async function getReport(): Promise<ReportingResult> {
   // 1. Total number of contracts
   const totalContractsRes = await db
