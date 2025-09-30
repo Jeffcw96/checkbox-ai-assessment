@@ -8,6 +8,8 @@ const config: Config = {
   collectCoverageFrom: ["src/**/*.ts", "!src/index.ts"],
   coverageDirectory: "coverage",
   verbose: false,
+  detectOpenHandles: true,
+  setupFiles: ["<rootDir>/tests/setup-env.ts"],
 };
 
 export default config;

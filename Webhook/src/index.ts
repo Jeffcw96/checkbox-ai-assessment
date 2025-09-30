@@ -27,7 +27,7 @@ app.get("/", (_req, res) => {
 });
 
 // For Vercel deployment
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

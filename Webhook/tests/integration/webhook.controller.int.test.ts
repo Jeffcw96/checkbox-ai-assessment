@@ -1,8 +1,8 @@
 import request from "supertest";
-import app from "../../src/index";
+import app from "../../src";
 
-describe("POST /webhook/events", () => {
-  const url = "/webhook/events";
+describe("POST /webhook/contracts", () => {
+  const url = "/webhook/contracts";
 
   it("returns 400 for missing body", async () => {
     const res = await request(app).post(url).send("");
