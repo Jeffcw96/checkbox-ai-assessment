@@ -1,0 +1,357 @@
+{
+	"info": {
+		"_postman_id": "c12d4f98-2010-452b-92b0-445a86203b03",
+		"name": "Checkbox",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11647066"
+	},
+	"item": [
+		{
+			"name": "Webhook",
+			"item": [
+				{
+					"name": "Webhook (Contract creation)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"event\": \"contract.created\",\n\"contract\": {\n    \"id\": \"contract-4\", // Make sure it's unique\n    \"title\": \"Apple legal assessment\",\n    \"description\": \"This is the test description for the service agreement with vendor Apple\",\n    \"status\": \"Draft\",\n    \"createdAt\": \"2025-09-25T13:34:56Z\",\n    \"comments\": [\n        { \"id\": \"cm-2\", \"author\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"message\": \"Start to prepare document\", \"createdAt\": \"2025-09-20T12:35:00Z\" }\n    ],\n    \"users\": [\n        { \"id\": \"f8401054-d7a8-45bc-95af-dc48cf20b406\", \"name\": \"Mok\", \"role\": \"Requester\" },\n        { \"id\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"name\": \"Jeff\", \"role\": \"Assignee\" }\n    ],\n    \"documents\": [\n        { \"id\": \"a1\", \"name\": \"contract-v1.pdf\", \"url\": \"https://example.com/contracts/a1\" },\n        { \"id\": \"b1\", \"name\": \"agreement-v1.pdf\", \"url\": \"https://example.com/contracts/b1\" }\n    ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{webhookUrl\n}}/webhook/contracts",
+							"host": [
+								"{{webhookUrl\n}}"
+							],
+							"path": [
+								"webhook",
+								"contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Webhook (Contract status update)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"event\": \"contract.status_updated\",\n\"contractId\": \"contract-3\",\n\"status\": \"Done\",\n\"updatedAt\": \"2025-09-29T18:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{webhookUrl\n}}/webhook/contracts",
+							"host": [
+								"{{webhookUrl\n}}"
+							],
+							"path": [
+								"webhook",
+								"contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Webhook (Add comment)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"event\": \"contract.comment_added\",\n    \"contractId\": \"contract-1\",\n    \"comment\": {\n        \"id\": \"cm2\",\n        \"author\": \"f8401054-d7a8-45bc-95af-dc48cf20b406\",\n        \"message\": \"Reviewed and added feedback\",\n        \"createdAt\": \"2025-09-22T09:12:00Z\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{webhookUrl\n}}/webhook/contracts",
+							"host": [
+								"{{webhookUrl\n}}"
+							],
+							"path": [
+								"webhook",
+								"contracts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Backend API",
+			"item": [
+				{
+					"name": "Import contract",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"eventId\": \"event-id-1\",\n\"event\": \"contract.created\",\n\"contract\": {\n    \"id\": \"c123\",\n    \"title\": \"Service Agreement with Vendor X\",\n    \"description\": \"Service agreement testing description\",\n    \"status\": \"Draft\",\n    \"createdAt\": \"2025-09-20T12:34:56Z\",\n    \"comments\": [\n        { \"id\": \"cm1\", \"author\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"message\": \"Initial draft created\", \"createdAt\": \"2025-09-20T12:35:00Z\" }\n    ],\n    \"users\": [\n        { \"id\": \"f8401054-d7a8-45bc-95af-dc48cf20b406\", \"name\": \"Mok\", \"role\": \"Requester\" },\n        { \"id\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"name\": \"Jeff\", \"role\": \"Assignee\" }\n    ],\n    \"documents\": [\n        { \"id\": \"d1\", \"name\": \"contract-v1.pdf\", \"url\": \"https://example.com/contracts/d1\" }\n    ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl\n}}/webhook",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update contract status",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"eventId\": \"event-id-2\",\n\"event\": \"contract.status_updated\",\n\"contractId\": \"c123\",\n\"status\": \"In Review\",\n\"updatedAt\": \"2025-09-21T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl\n}}/webhook",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"event-id-3\",\n    \"event\": \"contract.comment_added\",\n    \"contractId\": \"c123\",\n    \"comment\": {\n        \"id\": \"cm2\",\n        \"author\": \"f8401054-d7a8-45bc-95af-dc48cf20b406\",\n        \"message\": \"Reviewed and added feedback\",\n        \"createdAt\": \"2025-09-21T09:12:00Z\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl\n}}/webhook",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/user",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jeff test\",\n    \"email\": \"jefftest@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl\n}}/user",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Webhook",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"eventId\": \"event-id-1\", // Make sure it's unique\n\"event\": \"contract.created\",\n\"contract\": {\n    \"id\": \"contract-5\", // Make sure it's unique\n    \"title\": \"Apple legal assessment\",\n    \"description\": \"This is the test description for the service agreement with vendor Apple\",\n    \"status\": \"Draft\",\n    \"createdAt\": \"2025-09-25T13:34:56Z\",\n    \"comments\": [\n        { \"id\": \"cm-2\", \"author\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"message\": \"Start to prepare document\", \"createdAt\": \"2025-09-20T12:35:00Z\" }\n    ],\n    \"users\": [\n        { \"id\": \"f8401054-d7a8-45bc-95af-dc48cf20b406\", \"name\": \"Mok\", \"role\": \"Requester\" },\n        { \"id\": \"ebc50bed-20e1-4e30-9be3-48e7d834b3d6\", \"name\": \"Jeff\", \"role\": \"Assignee\" }\n    ],\n    \"documents\": [\n        { \"id\": \"a1\", \"name\": \"contract-v1.pdf\", \"url\": \"https://example.com/contracts/a1\" },\n        { \"id\": \"b1\", \"name\": \"agreement-v1.pdf\", \"url\": \"https://example.com/contracts/b1\" }\n    ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl\n}}/webhook",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contracts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/contracts",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/report",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"report"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contracts Document",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/contracts/:contractId/documents",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"contracts",
+								":contractId",
+								"documents"
+							],
+							"variable": [
+								{
+									"key": "contractId",
+									"value": "contract-4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contracts Comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/contracts/:contractId/comments",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"contracts",
+								":contractId",
+								"comments"
+							],
+							"variable": [
+								{
+									"key": "contractId",
+									"value": "contract-1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contract by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backendUrl\n}}/contracts/:contractId/contract",
+							"host": [
+								"{{backendUrl\n}}"
+							],
+							"path": [
+								"contracts",
+								":contractId",
+								"contract"
+							],
+							"variable": [
+								{
+									"key": "contractId",
+									"value": "contract-1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
