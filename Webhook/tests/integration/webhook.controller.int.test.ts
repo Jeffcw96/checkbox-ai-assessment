@@ -1,5 +1,16 @@
 import request from "supertest";
+
+import * as publishEventModule from "../../src/service/webhook.service";
+const publishSpy = jest
+  .spyOn(publishEventModule, "publishEventToQueue")
+  .mockResolvedValue({ isValid: true });
+
 import app from "../../src";
+
+afterEach(() => {
+  jest.clearAllMocks();
+  publishSpy.mockClear();
+});
 
 describe("POST /webhook/contracts", () => {
   const url = "/webhook/contracts";
