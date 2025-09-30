@@ -10,7 +10,8 @@
   - [Postman Collection](#postman-collection)
 - [Architecture Diagram](#architecture-diagram)
   - [Current state](#current-state)
-  - [Future state](#future-state)
+  - [Better state If I have more time](#future-state)
+  - [Architecture Note](#architecture-note)
 - [Things that AI helped me](#things-ai-helped-with)
 - [Things that I would do if I have more time](#things-i-would-do-if-i-have-more-time)
 
@@ -104,9 +105,39 @@ The Postman collection contains 2 folders:
 
 ![Current Architecture Diagram](./README_ASSETS/current_architecture.png)
 
-### Future state
+### Better state If I have more time
 
 ![Future Architecture Diagram](./README_ASSETS/future_architecture.png)
+
+### Architecture Note
+
+#### Q1: How you’d scale this system to 10x load
+
+1. Use Redis or any caching mechanism to reduce the database load for read-heavy operations
+2. Implement rate limiting to prevent abuse and ensure fair usage of the system
+3. Implement API gateway and load balancer to distribute the incoming traffic evenly across multiple instances of the backend service
+
+#### Q2: How you’d ensure reliability (idempotency, retries)
+
+1. Implement idempotency key for each webhook event to ensure that the same event is not processed multiple times
+2. Implement retry mechanism with exponential backoff for failed webhook events
+3. Use dead-letter queue to handle failed events that cannot be processed after multiple retries
+
+#### Q3: How you’d extend to support more webhook event types
+
+1. Separate the event processing from the entity such as `contract`, `user` and etc. Each entity should associated with their own queue and lambda function to process the events since they will have a different business logic and API handling
+
+#### Q4: Observability approach (logs, metrics, tracing)
+
+1. Proper logging with log levels (info, warn, error) and structured logging to make it easier to search and analyze the logs
+2. Integrate with Datadog APM to monitor the performance of the system and clearly identify the which downsteam service is causing the latency and error
+3. Setup p99 & p95 monitoring and alerting to ensure the system is performing as expected
+4. Make sure we send a Datadog metric when event goes into DLQ so that we can monitor and alert on it
+
+#### Q5: Trade-offs you considered
+
+1. Using event driven architecture vs traditional HTTP-based architecture. I chose event driven architecture since it allows me to enable retry mechanism and easily couple/decouple with other downstream services. However, it comes with its own set of challenges such as slightly higher latency and increased complexity in the system
+2. Using DynamoDB vs relational database such as PostgreSQL for serverless lambda. I chose DynamoDB since it provides auto scalability to handle unexpected traffic spikes and apart from the partition key, it's schema-less which gives me more flexibility to iterate the data model quickly.
 
 ## Things that AI helped me
 
