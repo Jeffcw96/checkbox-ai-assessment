@@ -5,7 +5,7 @@
 - [Project Structure](#project-structure)
 - [Project Overview](#project-overview)
 - [Assumptions](#assumptions)
-- [How to test](#technologies-used)
+- [How to test](#how-to-test)
   - [Setup Instructions](#setup-instructions)
   - [Postman Collection](#postman-collection)
 - [Architecture Diagram](#architecture-diagram)
