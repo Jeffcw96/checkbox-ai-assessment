@@ -116,6 +116,7 @@ The Postman collection contains 2 folders:
 1. Use Redis or any caching mechanism to reduce the database load for read-heavy operations
 2. Implement rate limiting to prevent abuse and ensure fair usage of the system
 3. Implement API gateway and load balancer to distribute the incoming traffic evenly across multiple instances of the backend service
+4. Implement priority-attribute (High, Medium, Low) to ensure high priority events are processed first, each priority will have their own SQS queue and Lambda function to process the events. Reserve higher concunrrency execution for high priority events.
 
 #### Q2: How you’d ensure reliability (idempotency, retries)
 
