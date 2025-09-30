@@ -1,6 +1,6 @@
-import { handleNewContractCreation } from "../../src/service/contract.service";
+import { handleNewContractCreation } from "../../service/contract.service";
 
-jest.mock("../../src/db/client", () => ({
+jest.mock("../../db/client", () => ({
   db: {
     transaction: jest.fn(),
   },

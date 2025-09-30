@@ -1,11 +1,11 @@
 import request from "supertest";
 
-import * as publishEventModule from "../../src/service/webhook.service";
+import * as publishEventModule from "../../service/webhook.service";
 const publishSpy = jest
   .spyOn(publishEventModule, "publishEventToQueue")
   .mockResolvedValue({ isValid: true });
 
-import app from "../../src";
+import app from "../..";
 
 afterEach(() => {
   jest.clearAllMocks();

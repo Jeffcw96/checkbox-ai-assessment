@@ -1,7 +1,7 @@
 import {
   validateEvent,
   validateSchemaPayload,
-} from "../../src/service/webhook.service";
+} from "../../service/webhook.service";
 
 describe("webhook.service validateEvent", () => {
   it("rejects non-string event", () => {

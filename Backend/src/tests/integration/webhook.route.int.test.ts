@@ -1,7 +1,7 @@
 import request from "supertest";
-import app from "../../src";
+import app from "../..";
 
-jest.mock("../../src/service/webhook.service", () => ({
+jest.mock("../../service/webhook.service", () => ({
   getEventRouter: () => ({
     "contract.created": jest.fn(async () => ({
       isValid: true,
