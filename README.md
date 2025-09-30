@@ -1,4 +1,4 @@
-## Jeff Change Checkbox.ai assessment
+## Jeff Chang's Checkbox.ai assessment
 
 ## Table of Contents
 
