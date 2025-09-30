@@ -70,6 +70,8 @@ This repository contains total of 4 main folders:
 
 ### Setup Instructions
 
+Production dashboard URL: https://checkbox-ai-assessment.vercel.app/
+
 1. Make sure you have docker installed in your local machine
 2. Clone the repository
 3. `make up`
